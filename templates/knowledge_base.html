@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Airport Knowledge Base - AeroAssist AI{% endblock %}
+
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-cyan); font-weight: 700;">
+      Milestone 2 &bull; Domain Knowledge Repository
+    </span>
+    <h1 style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 800; color: #fff; margin-top: 0.2rem;">
+      Airport & Airways Knowledge Base
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.88rem;">
+      7 Knowledge Clusters &bull; Grounded Standard Operating Procedures for Passenger Support.
+    </p>
+  </div>
+</div>
+
+<!-- Filter and Search Bar -->
+<div class="glass-panel" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+  <form method="GET" action="{{ url_for('knowledge_base_view') }}" style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 1rem; align-items: flex-end;">
+    
+    <div>
+      <label class="form-label" style="font-size: 0.75rem;">Cluster Filter</label>
+      <select name="cluster" class="form-select" onchange="this.form.submit()">
+        <option value="All" {% if selected_cluster == 'All' %}selected{% endif %}>All 7 Clusters</option>
+        {% for cl in clusters %}
+          <option value="{{ cl }}" {% if selected_cluster == cl %}selected{% endif %}>{{ cl }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="form-label" style="font-size: 0.75rem;">Search Procedures, Baggage, Gates, Refunds...</label>
+      <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Type keyword to filter knowledge base...">
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary" style="height: 42px;">Search KB</button>
+      {% if selected_cluster != 'All' or search %}
+        <a href="{{ url_for('knowledge_base_view') }}" class="btn btn-outline" style="height: 42px;">Reset</a>
+      {% endif %}
+    </div>
+
+  </form>
+</div>
+
+<!-- Knowledge Base Articles Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.25rem;">
+  {% if articles %}
+    {% for art in articles %}
+    <div class="glass-panel" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <span class="badge badge-open" style="font-family: monospace; font-size: 0.8rem; font-weight: 700;">
+            {{ art.id }}
+          </span>
+          <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #A5B4FC; font-size: 0.7rem;">
+            {{ art.cluster }}
+          </span>
+        </div>
+
+        <h3 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem;">
+          {{ art.title }}
+        </h3>
+
+        <div style="font-size: 0.75rem; color: var(--accent-cyan); margin-bottom: 0.75rem;">
+          🏷️ {{ art.category }}
+        </div>
+
+        <p style="font-size: 0.85rem; color: #CBD5E1; line-height: 1.6; margin-bottom: 1rem;">
+          {{ art.content }}
+        </p>
+      </div>
+
+      {% if art.keywords %}
+      <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 0.75rem; display: flex; gap: 0.35rem; flex-wrap: wrap;">
+        {% for kw in art.keywords[:5] %}
+          <span style="font-size: 0.68rem; background: rgba(255, 255, 255, 0.05); color: var(--text-dim); padding: 0.15rem 0.45rem; border-radius: 4px;">
+            #{{ kw }}
+          </span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+      <h3>No Knowledge Articles Found</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.3rem;">Try searching for "baggage", "check-in", "delays", "wheelchair", or "parking".</p>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

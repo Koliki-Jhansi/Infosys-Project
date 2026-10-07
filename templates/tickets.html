@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Support Tickets - AeroAssist AI{% endblock %}
+
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-cyan); font-weight: 700;">
+      Ticket Management (Milestone 1)
+    </span>
+    <h1 style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 800; color: #fff; margin-top: 0.2rem;">
+      Airport Support Tickets
+    </h1>
+  </div>
+  
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <form method="POST" action="{{ url_for('seed_samples') }}" style="display: inline;">
+      <button type="submit" class="btn btn-outline">
+        🧪 Seed 8 Test Tickets
+      </button>
+    </form>
+    <a href="{{ url_for('create_ticket_view') }}" class="btn btn-primary">
+      <span>➕</span> Raise Support Ticket
+    </a>
+  </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="glass-panel" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+  <form method="GET" action="{{ url_for('tickets_list') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto; gap: 1rem; align-items: flex-end;">
+    
+    <div>
+      <label class="form-label" style="font-size: 0.75rem;">Category Filter</label>
+      <select name="category" class="form-select" onchange="this.form.submit()">
+        <option value="All" {% if selected_category == 'All' %}selected{% endif %}>All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="form-label" style="font-size: 0.75rem;">Status Filter</label>
+      <select name="status" class="form-select" onchange="this.form.submit()">
+        <option value="All" {% if selected_status == 'All' %}selected{% endif %}>All Statuses</option>
+        <option value="Open" {% if selected_status == 'Open' %}selected{% endif %}>Open</option>
+        <option value="In Progress" {% if selected_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+        <option value="Resolved" {% if selected_status == 'Resolved' %}selected{% endif %}>Resolved</option>
+        <option value="Escalated" {% if selected_status == 'Escalated' %}selected{% endif %}>Escalated</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="form-label" style="font-size: 0.75rem;">Search Keyword / Flight / PNR</label>
+      <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search ticket text...">
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary" style="height: 42px;">Filter</button>
+      {% if selected_category != 'All' or selected_status != 'All' or search_query %}
+        <a href="{{ url_for('tickets_list') }}" class="btn btn-outline" style="height: 42px;">Reset</a>
+      {% endif %}
+    </div>
+
+  </form>
+</div>
+
+<!-- Ticket List Table -->
+<div class="glass-panel">
+  {% if tickets %}
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Ticket ID</th>
+          <th>Passenger</th>
+          <th>Title & Category</th>
+          <th>Airport / Flight</th>
+          <th>Priority / Severity</th>
+          <th>Status</th>
+          <th>AI Workflow</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr>
+          <td>
+            <a href="{{ url_for('ticket_detail', ticket_id=t.ticket_id) }}" style="color: var(--accent-cyan); font-weight: 700; text-decoration: none;">
+              {{ t.ticket_id }}
+            </a>
+            <div style="font-size: 0.7rem; color: var(--text-dim);">{{ t.created_at[:10] if t.created_at else '' }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 600;">{{ t.passenger_name }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim);">{{ t.passenger_email }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: #fff;">{{ t.title }}</div>
+            <div style="font-size: 0.75rem; color: var(--accent-cyan); margin-top: 0.15rem;">
+              🏷️ {{ t.category }}
+              {% if t.classification_confidence %}
+                <span style="color: var(--text-dim);">({{ (t.classification_confidence * 100)|round(0) }}% conf)</span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 0.82rem; font-family: monospace; color: #7DD3FC;">
+              {{ t.flight_number or '—' }} {% if t.booking_ref %}({{ t.booking_ref }}){% endif %}
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-dim);">
+              📍 {{ t.airport or 'General' }}
+            </div>
+          </td>
+          <td>
+            <div>
+              {% if t.priority == 'Critical' %}
+                <span class="badge badge-prio-critical">Critical</span>
+              {% elif t.priority == 'High' %}
+                <span class="badge badge-prio-high">High</span>
+              {% elif t.priority == 'Medium' %}
+                <span class="badge badge-prio-med">Medium</span>
+              {% else %}
+                <span class="badge badge-prio-low">Low</span>
+              {% endif %}
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem;">
+              Sev: {{ t.severity }}
+            </div>
+          </td>
+          <td>
+            {% if t.status == 'Resolved' %}
+              <span class="badge badge-resolved">Resolved</span>
+            {% elif t.status == 'Escalated' %}
+              <span class="badge badge-escalated">Escalated</span>
+            {% elif t.status == 'In Progress' %}
+              <span class="badge badge-progress">In Progress</span>
+            {% else %}
+              <span class="badge badge-open">Open</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if t.ai_resolution_status == 'AUTO_RESOLVE' %}
+              <span class="badge badge-resolved" title="Final Confidence: {{ (t.final_confidence * 100)|round(1) if t.final_confidence else 'N/A' }}%">
+                🤖 Auto-Resolved
+              </span>
+            {% elif t.ai_resolution_status == 'ESCALATE' %}
+              <span class="badge badge-escalated" title="Escalated to Human Support">
+                🚨 Escalated
+              </span>
+            {% else %}
+              <span class="badge badge-open">Pending AI</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display: flex; gap: 0.4rem;">
+              <a href="{{ url_for('ticket_detail', ticket_id=t.ticket_id) }}" class="btn btn-outline btn-sm">
+                Details
+              </a>
+              <a href="{{ url_for('multi_agent_studio_view', ticket_id=t.ticket_id) }}" class="btn btn-primary btn-sm">
+                ⚡ Resolve
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+    <h3>No Tickets Found Matching Criteria</h3>
+    <p style="font-size: 0.9rem; margin-top: 0.3rem;">Try adjusting filters or seed sample tickets.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

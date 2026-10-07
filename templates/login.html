@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - AeroAssist AI{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 2.5rem auto;">
+  <div class="glass-panel" style="padding: 2.25rem;">
+    
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="brand-icon" style="margin: 0 auto 1rem; width: 54px; height: 54px; font-size: 1.75rem;">✈️</div>
+      <h2 style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: #fff;">
+        {% if register_mode %}Create AeroAssist Account{% else %}Passenger & Staff Portal{% endif %}
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">
+        {% if register_mode %}Register to track flights, manage tickets, and get AI support{% else %}Sign in to manage airport tickets and run multi-agent resolution{% endif %}
+      </p>
+    </div>
+
+    {% if not register_mode %}
+    <!-- Quick Demo Accounts -->
+    <div style="background: rgba(56, 189, 248, 0.08); border: 1px dashed var(--border-glow); border-radius: 10px; padding: 1rem; margin-bottom: 1.75rem;">
+      <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-cyan); font-weight: 700; display: block; margin-bottom: 0.6rem;">
+        ⚡ Instant One-Click Demo Logins
+      </span>
+      <form method="POST" action="{{ url_for('login') }}" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="submit" name="demo_login" value="passenger" class="btn btn-outline btn-sm" style="flex: 1;">
+          👤 Passenger
+        </button>
+        <button type="submit" name="demo_login" value="agent" class="btn btn-outline btn-sm" style="flex: 1;">
+          🛡️ Support Agent
+        </button>
+        <button type="submit" name="demo_login" value="admin" class="btn btn-outline btn-sm" style="flex: 1;">
+          ⚡ Admin
+        </button>
+      </form>
+    </div>
+
+    <!-- Login Form -->
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label class="form-label">Username or Email</label>
+        <input type="text" name="identifier" class="form-control" placeholder="e.g. passenger or alex@example.com" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.8rem;">
+        Sign In to AeroAssist
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+      New passenger? <a href="{{ url_for('register') }}" style="color: var(--accent-cyan); text-decoration: none; font-weight: 600;">Register an account</a>
+    </div>
+
+    {% else %}
+    <!-- Register Form -->
+    <form method="POST" action="{{ url_for('register') }}">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="full_name" class="form-control" placeholder="e.g. Alex Morgan" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" placeholder="e.g. alexmorgan" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" name="email" class="form-control" placeholder="alex@aeroassist.ai" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.8rem;">
+        Create Account
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+      Already have an account? <a href="{{ url_for('login') }}" style="color: var(--accent-cyan); text-decoration: none; font-weight: 600;">Sign in here</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Raise Support Ticket - AeroAssist AI{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 880px; margin: 0 auto;">
+  
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('tickets_list') }}" style="color: var(--accent-cyan); text-decoration: none; font-size: 0.85rem; font-weight: 600;">
+      ← Back to Tickets
+    </a>
+    <h1 style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 800; color: #fff; margin-top: 0.3rem;">
+      Raise Airport & Airways Support Ticket
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+      Submit your flight, baggage, check-in, or airport service request. Our AI Classifier will automatically determine the domain category and priority.
+    </p>
+  </div>
+
+  <!-- Quick Fill Template Chips -->
+  <div class="glass-panel" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-cyan); font-weight: 700; display: block; margin-bottom: 0.6rem;">
+      ⚡ Quick-Fill Common Passenger Scenarios
+    </span>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <button type="button" class="btn btn-outline btn-sm quick-fill-btn"
+        data-title="Checked baggage not on arrival carousel"
+        data-desc="Landed on flight AA402 from London Heathrow. My checked black suitcase has not appeared on carousel 3. Need to file Property Irregularity Report PIR."
+        data-cat="Baggage"
+        data-flight="AA402"
+        data-pnr="LON882">
+        🧳 Delayed Baggage
+      </button>
+
+      <button type="button" class="btn btn-outline btn-sm quick-fill-btn"
+        data-title="Web check-in error booking verification required"
+        data-desc="System showing error code ERR-CHK404 when attempting online check-in for flight BA189. Cannot generate boarding passes."
+        data-cat="Check-in & Boarding"
+        data-flight="BA189"
+        data-pnr="BAX901">
+        📲 Web Check-in Error
+      </button>
+
+      <button type="button" class="btn btn-outline btn-sm quick-fill-btn"
+        data-title="Wheelchair assistance needed at departure"
+        data-desc="Requesting WCHR electric wheelchair buggy mobility assistance for senior citizen from Terminal Entrance 2 through security to boarding gate."
+        data-cat="Passenger Assistance"
+        data-flight="EK203"
+        data-pnr="DXB771">
+        ♿ Wheelchair Support
+      </button>
+
+      <button type="button" class="btn btn-outline btn-sm quick-fill-btn"
+        data-title="Flight cancelled due to weather need rebooking"
+        data-desc="Flight DL901 cancelled. What is the process for rebooking on the next available flight or getting an open travel voucher?"
+        data-cat="Delays & Cancellations"
+        data-flight="DL901"
+        data-pnr="DL9941">
+        ⛈️ Flight Cancellation
+      </button>
+
+      <button type="button" class="btn btn-outline btn-sm quick-fill-btn"
+        data-title="Long-term airport parking tariffs and shuttle transfer"
+        data-desc="Inquiry about 4-day long stay economy parking lot pre-booking discount and 24/7 shuttle bus frequency to Terminal 1."
+        data-cat="Airport Facilities"
+        data-flight="UA210"
+        data-pnr="UAP123">
+        🅿️ Parking Inquiry
+      </button>
+    </div>
+  </div>
+
+  <!-- Ticket Form -->
+  <div class="glass-panel">
+    <form method="POST" action="{{ url_for('create_ticket_view') }}">
+      
+      <div class="form-group">
+        <label class="form-label">Ticket Title / Summary <span style="color: #F87171;">*</span></label>
+        <input type="text" id="title" name="title" class="form-control" placeholder="e.g. My checked baggage has not arrived at baggage claim" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Detailed Passenger Description <span style="color: #F87171;">*</span></label>
+        <textarea id="description" name="description" rows="5" class="form-control" placeholder="Provide full details regarding your flight, boarding gate, baggage tag numbers, or support requirements..." required></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category Assignment</label>
+          <select id="category" name="category" class="form-select">
+            <option value="Auto-Classify" selected>🤖 Auto-Classify (AI Machine Learning)</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}">{{ cat }}</option>
+            {% endfor %}
+          </select>
+          <span style="font-size: 0.72rem; color: var(--text-dim); margin-top: 0.2rem; display: block;">
+            Leave as Auto-Classify to let TF-IDF + Classifier detect domain cluster.
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Flight Number (Optional)</label>
+          <input type="text" id="flight_number" name="flight_number" class="form-control" placeholder="e.g. AA402, BA189, EK203">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Booking Reference / PNR (Optional)</label>
+          <input type="text" id="booking_ref" name="booking_ref" class="form-control" placeholder="e.g. 6-character PNR like AA9821">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Airport Code / Terminal (Optional)</label>
+          <input type="text" id="airport" name="airport" class="form-control" placeholder="e.g. JFK Terminal 4, LHR Terminal 2">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Travel Date (Optional)</label>
+          <input type="date" id="travel_date" name="travel_date" class="form-control">
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1.25rem;">
+        <a href="{{ url_for('tickets_list') }}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem;">
+          🚀 Submit & Classify Ticket
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+
+{% endblock %}

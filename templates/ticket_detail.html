@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket {{ ticket.ticket_id }} - AeroAssist AI{% endblock %}
+
+{% block content %}
+
+<div style="margin-bottom: 1.5rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <a href="{{ url_for('tickets_list') }}" style="color: var(--accent-cyan); text-decoration: none; font-size: 0.85rem; font-weight: 600;">
+        ← Back to All Tickets
+      </a>
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.4rem;">
+        <h1 style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 800; color: #fff;">
+          {{ ticket.ticket_id }}
+        </h1>
+        {% if ticket.status == 'Resolved' %}
+          <span class="badge badge-resolved">Resolved</span>
+        {% elif ticket.status == 'Escalated' %}
+          <span class="badge badge-escalated">Escalated</span>
+        {% elif ticket.status == 'In Progress' %}
+          <span class="badge badge-progress">In Progress</span>
+        {% else %}
+          <span class="badge badge-open">Open</span>
+        {% endif %}
+
+        {% if ticket.ai_resolution_status == 'AUTO_RESOLVE' %}
+          <span class="badge badge-resolved">🤖 Auto-Resolved</span>
+        {% elif ticket.ai_resolution_status == 'ESCALATE' %}
+          <span class="badge badge-escalated">🚨 Escalated to Human</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{{ url_for('m2_ai_resolution_view', ticket_id=ticket.ticket_id) }}" class="btn btn-outline" style="padding: 0.65rem 1.25rem;">
+        🔍 Milestone 2: AI Knowledge Resolution
+      </a>
+      <a href="{{ url_for('multi_agent_studio_view', ticket_id=ticket.ticket_id) }}" class="btn btn-primary" style="padding: 0.65rem 1.25rem;">
+        ⚡ Milestone 3: Multi-Agent Studio ➔
+      </a>
+    </div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+  
+  <!-- Main Details Column -->
+  <div>
+    <!-- Ticket Content -->
+    <div class="glass-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>📋</span> Passenger Support Request
+        </div>
+        <span style="font-size: 0.8rem; color: var(--text-dim);">Created: {{ ticket.created_at }}</span>
+      </div>
+
+      <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 0.75rem;">
+        {{ ticket.title }}
+      </h3>
+
+      <div style="background: rgba(11, 20, 44, 0.7); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.25rem; font-size: 0.92rem; line-height: 1.7; color: #E2E8F0; white-space: pre-wrap;">{{ ticket.description }}</div>
+
+      <!-- Airport & Travel Metadata -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+        <div>
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Flight Number</span>
+          <div style="font-family: monospace; font-size: 1rem; color: #7DD3FC; font-weight: 600;">
+            {{ ticket.flight_number or 'N/A' }}
+          </div>
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Booking PNR</span>
+          <div style="font-family: monospace; font-size: 1rem; color: #7DD3FC; font-weight: 600;">
+            {{ ticket.booking_ref or 'N/A' }}
+          </div>
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Airport / Terminal</span>
+          <div style="font-size: 0.95rem; color: #fff; font-weight: 600;">
+            {{ ticket.airport or 'General' }}
+          </div>
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Travel Date</span>
+          <div style="font-size: 0.95rem; color: #fff; font-weight: 600;">
+            {{ ticket.travel_date or 'N/A' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 1: MILESTONE 2 - AI KNOWLEDGE RESOLUTION -->
+    <div class="glass-panel" style="border-left: 4px solid var(--primary-cyan);">
+      <div class="panel-header">
+        <div class="panel-title" style="font-size: 1.15rem;">
+          <span>🔍</span> MILESTONE 2 &bull; AI KNOWLEDGE RESOLUTION
+        </div>
+        <span class="badge" style="background: rgba(14, 165, 233, 0.2); color: #38BDF8;">RAG / TF-IDF / Cosine Similarity</span>
+      </div>
+
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Retrieve official airport standard operating procedures and generate a grounded knowledge resolution.
+      </p>
+
+      {% if rag_preview %}
+      <div style="background: rgba(11, 20, 44, 0.8); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.15rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--accent-cyan); font-weight: 700;">
+            Pre-Execution RAG Vector Match
+          </span>
+          {% if rag_preview.knowledge_found %}
+            <span class="badge badge-resolved" style="font-weight: 700;">Match: {{ (rag_preview.similarity_score * 100)|round(1) }}%</span>
+          {% else %}
+            <span class="badge badge-escalated">No High-Confidence KB Match</span>
+          {% endif %}
+        </div>
+
+        {% if rag_preview.top_article %}
+          <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">
+            📚 {{ rag_preview.top_article.id }} - {{ rag_preview.top_article.title }}
+          </div>
+          <p style="font-size: 0.82rem; color: #CBD5E1; margin-top: 0.35rem; line-height: 1.5;">
+            {{ rag_preview.top_article.content[:200] }}...
+          </p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <a href="{{ url_for('m2_ai_resolution_view', ticket_id=ticket.ticket_id) }}" class="btn btn-primary" style="padding: 0.65rem 1.4rem;">
+        View AI Knowledge Resolution ➔
+      </a>
+    </div>
+
+    <!-- SECTION 2: MILESTONE 3 - MULTI-AGENT TICKET RESOLUTION -->
+    <div class="glass-panel" style="border-left: 4px solid #8B5CF6;">
+      <div class="panel-header">
+        <div class="panel-title" style="font-size: 1.15rem;">
+          <span>🤖</span> MILESTONE 3 &bull; MULTI-AGENT TICKET RESOLUTION
+        </div>
+        <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #A5B4FC;">5-Agent Aviation Pipeline</span>
+      </div>
+
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Run the complete five-agent aviation support pipeline:
+      </p>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; font-size: 0.82rem; font-weight: 600; flex-wrap: wrap; background: rgba(11, 20, 44, 0.6); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+        <span style="color: #38BDF8;">Diagnosis</span>
+        <span style="color: var(--text-dim);">&rarr;</span>
+        <span style="color: #818CF8;">Retrieval (reusing M2 RAG)</span>
+        <span style="color: var(--text-dim);">&rarr;</span>
+        <span style="color: #34D399;">Resolution</span>
+        <span style="color: var(--text-dim);">&rarr;</span>
+        <span style="color: #FBBF24;">Validation (70% Gate)</span>
+        <span style="color: var(--text-dim);">&rarr;</span>
+        <span style="color: #F43F5E;">Escalation</span>
+      </div>
+
+      <a href="{{ url_for('multi_agent_studio_view', ticket_id=ticket.ticket_id) }}" class="btn btn-accent" style="padding: 0.65rem 1.4rem;">
+        Run Multi-Agent Workflow ➔
+      </a>
+    </div>
+
+    <!-- AI Resolution Outcome Card if available -->
+    {% if ticket.resolution_text %}
+    <div class="glass-panel" style="border-left: 4px solid {% if ticket.ai_resolution_status == 'AUTO_RESOLVE' %}var(--status-resolved){% else %}var(--status-escalated){% endif %};">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>{% if ticket.ai_resolution_status == 'AUTO_RESOLVE' %}🤖 AI Auto-Resolution{% else %}🚨 Human Support Escalation{% endif %}</span>
+        </div>
+        <span class="badge {% if ticket.ai_resolution_status == 'AUTO_RESOLVE' %}badge-resolved{% else %}badge-escalated{% endif %}">
+          Confidence: {{ (ticket.final_confidence * 100)|round(1) if ticket.final_confidence else 'N/A' }}%
+        </span>
+      </div>
+
+      <div style="font-size: 0.92rem; line-height: 1.7; color: #E2E8F0; white-space: pre-wrap; background: rgba(11, 20, 44, 0.6); padding: 1.25rem; border-radius: 8px;">{{ ticket.resolution_text }}</div>
+
+      {% if ticket.retrieved_kb_id %}
+      <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+        <span>📚 Knowledge Base Reference:</span>
+        <span class="badge badge-open">{{ ticket.retrieved_kb_id }}</span>
+        {% if ticket.retrieval_similarity %}
+          <span>(Similarity: {{ (ticket.retrieval_similarity * 100)|round(1) }}%)</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if ticket.escalation_reason %}
+      <div style="margin-top: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.8rem; border-radius: 8px; font-size: 0.82rem; color: #FCA5A5;">
+        <strong>Escalation Reason:</strong> {{ ticket.escalation_reason }}
+      </div>
+      {% endif %}
+
+      {% if ticket.jira_issue_key %}
+      <div style="margin-top: 0.75rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.6rem 0.85rem; border-radius: 8px; font-size: 0.82rem; color: #6EE7B7; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <span>🎫 <strong>Jira Escalation Ticket:</strong></span>
+        <span style="font-family: monospace; font-weight: 700; color: #fff;">{{ ticket.jira_issue_key }}</span>
+        {% if ticket.jira_issue_url %}
+          &bull; <a href="{{ ticket.jira_issue_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); text-decoration: underline; font-weight: 600;">View in Jira ↗</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Multi-Agent Audit Trail History -->
+    {% if agent_runs %}
+    <div class="glass-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>📜</span> Multi-Agent Execution Audit Logs
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Diagnosis Intent</th>
+              <th>KB Match</th>
+              <th>Similarity</th>
+              <th>Confidence</th>
+              <th>Outcome</th>
+              <th>Jira / Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for run in agent_runs %}
+            <tr>
+              <td style="font-size: 0.75rem; color: var(--text-dim);">{{ run.executed_at }}</td>
+              <td style="font-size: 0.82rem;">{{ run.diagnosis_intent or 'N/A' }}</td>
+              <td>
+                {% if run.retrieval_found %}
+                  <span class="badge badge-open">{{ run.retrieval_kb_id }}</span>
+                {% else %}
+                  <span style="color: var(--text-dim); font-size: 0.75rem;">None</span>
+                {% endif %}
+              </td>
+              <td>{{ (run.retrieval_similarity * 100)|round(1) if run.retrieval_similarity else 0 }}%</td>
+              <td style="font-weight: 700; color: {% if run.final_confidence >= run.threshold %}#34D399{% else %}#F87171{% endif %};">
+                {{ (run.final_confidence * 100)|round(1) if run.final_confidence else 0 }}%
+              </td>
+              <td>
+                <span class="badge {% if run.outcome == 'AUTO_RESOLVE' %}badge-resolved{% else %}badge-escalated{% endif %}">
+                  {{ run.outcome }}
+                </span>
+              </td>
+              <td style="font-size: 0.75rem; color: var(--text-dim);">
+                Jira: 
+                {% if run.jira_issue_key %}
+                  <a href="{{ run.jira_issue_url }}" target="_blank" style="color: var(--accent-cyan); font-weight: 600;">{{ run.jira_issue_key }}</a>
+                {% else %}
+                  {{ run.jira_status or 'N/A' }}
+                {% endif %}<br>
+                Email: {{ run.email_status or 'N/A' }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Sidebar Column (Classification & Passenger Info) -->
+  <div>
+    
+    <!-- Classification Card -->
+    <div class="glass-panel">
+      <div class="panel-header">
+        <div class="panel-title" style="font-size: 1.05rem;">
+          <span>🤖</span> AI Ticket Classification
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Assigned Domain Category</span>
+        <div style="font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan); margin-top: 0.2rem;">
+          {{ ticket.category }}
+        </div>
+      </div>
+
+      {% if ticket.predicted_category %}
+      <div style="margin-bottom: 1rem;">
+        <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">ML Predicted Category</span>
+        <div style="font-size: 0.95rem; color: #E2E8F0; font-weight: 600;">
+          {{ ticket.predicted_category }}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if ticket.classification_confidence %}
+      <div style="margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.3rem;">
+          <span style="color: var(--text-muted);">Classifier Confidence</span>
+          <span style="font-weight: 700; color: #fff;">{{ (ticket.classification_confidence * 100)|round(1) }}%</span>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.1); height: 6px; border-radius: 3px; overflow: hidden;">
+          <div style="background: linear-gradient(90deg, #0284C7, #00F0FF); width: {{ (ticket.classification_confidence * 100)|round(0) }}%; height: 100%;"></div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div style="font-size: 0.72rem; color: var(--text-dim); padding-top: 0.75rem; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+        Model: TF-IDF + Multinomial Naive Bayes trained on Airport & Airways Domain Dataset.
+      </div>
+    </div>
+
+    <!-- Urgency & Operational Impact Card -->
+    <div class="glass-panel">
+      <div class="panel-header">
+        <div class="panel-title" style="font-size: 1.05rem;">
+          <span>⚡</span> Urgency & Severity
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Ticket Priority</span>
+        <div style="margin-top: 0.3rem;">
+          {% if ticket.priority == 'Critical' %}
+            <span class="badge badge-prio-critical" style="font-size: 0.85rem; padding: 0.35rem 0.8rem;">🚨 Critical Urgency</span>
+          {% elif ticket.priority == 'High' %}
+            <span class="badge badge-prio-high" style="font-size: 0.85rem; padding: 0.35rem 0.8rem;">🔥 High Priority</span>
+          {% elif ticket.priority == 'Medium' %}
+            <span class="badge badge-prio-med" style="font-size: 0.85rem; padding: 0.35rem 0.8rem;">⚡ Medium Priority</span>
+          {% else %}
+            <span class="badge badge-prio-low" style="font-size: 0.85rem; padding: 0.35rem 0.8rem;">🌿 Low Priority</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Operational Severity</span>
+        <div style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-top: 0.2rem;">
+          {{ ticket.severity }} Impact
+        </div>
+      </div>
+    </div>
+
+    <!-- Passenger Profile Card -->
+    <div class="glass-panel">
+      <div class="panel-header">
+        <div class="panel-title" style="font-size: 1.05rem;">
+          <span>👤</span> Passenger Profile
+        </div>
+      </div>
+
+      <div style="margin-bottom: 0.85rem;">
+        <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Passenger Name</span>
+        <div style="font-weight: 600; color: #fff;">{{ ticket.passenger_name }}</div>
+      </div>
+
+      <div>
+        <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Contact Email</span>
+        <div style="font-size: 0.85rem; color: var(--accent-cyan); word-break: break-all;">{{ ticket.passenger_email }}</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

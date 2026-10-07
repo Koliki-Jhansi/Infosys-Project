@@ -1,0 +1,202 @@
+[
+  {
+    "id": "KB001",
+    "cluster": "FLIGHTS",
+    "category": "Delays & Cancellations",
+    "title": "Flight Delay Policy & Passenger Refreshment Vouchers",
+    "keywords": ["delay", "delayed", "schedule change", "waiting", "voucher", "refreshments", "meal", "hotel"],
+    "content": "AeroAssist partner airlines provide standard passenger care during flight delays. For delays exceeding 2 hours on short-haul flights or 3 hours on long-haul flights, passengers are entitled to complimentary meal and beverage vouchers redeemable at airport partner food courts and cafes. If your flight is delayed overnight (exceeding 6 hours during night hours), airlines arrange complimentary airport transit hotel accommodation with ground transfer. Please present your digital or physical boarding pass at the airline customer service counter near your gate to receive your voucher."
+  },
+  {
+    "id": "KB002",
+    "cluster": "FLIGHTS",
+    "category": "Delays & Cancellations",
+    "title": "Flight Cancellation Procedures & Rebooking Options",
+    "keywords": ["cancellation", "cancelled", "canceled", "rebook", "reschedule", "alternate flight", "disruption"],
+    "content": "When a flight is cancelled due to operational, technical, or meteorological reasons, passengers are automatically eligible for priority rebooking on the next available flight at no additional fare difference. Alternatively, passengers may request an open travel voucher valid for 12 months or request a 100% full refund to their original payment method. To select an alternate flight immediately, log into your booking manage portal or approach the airline transit transfer desk located in Terminal Departures Area B."
+  },
+  {
+    "id": "KB003",
+    "cluster": "FLIGHTS",
+    "category": "Check-in & Boarding",
+    "title": "Boarding Gate Information & Departure Procedures",
+    "keywords": ["boarding", "gate", "gate change", "departure", "final call", "zone boarding"],
+    "content": "Boarding gates open 45 minutes prior to scheduled departure time and close strictly 15 minutes before departure for domestic flights (20 minutes for international flights). Gate assignments are broadcast on Flight Information Display Screens (FIDS) located throughout all terminal concourses. Boarding is conducted in structured zones (Zone 1: Priority/Assistance, Zone 2: Premium Cabins, Zones 3-5: Economy rows). Passengers arriving after gate closure cannot be accommodated and must report to the transfer desk."
+  },
+  {
+    "id": "KB004",
+    "cluster": "CHECK-IN & BOARDING",
+    "category": "Check-in & Boarding",
+    "title": "Web & Mobile Check-in Troubleshooting Guide",
+    "keywords": ["web check-in", "online checkin", "mobile checkin", "app checkin", "check in error", "unable to check in"],
+    "content": "Web and mobile check-in opens 48 hours prior to scheduled departure and closes 60 minutes before departure. If you encounter an error during online check-in, common causes include: unconfirmed ticket status, pending passport/visa document verification for international travel, or special assistance service requests attached to the reservation. If online check-in fails, please proceed directly to the airport self-service kiosks or dedicated airline document verification check-in counters located in Terminal Zone 2."
+  },
+  {
+    "id": "KB005",
+    "cluster": "CHECK-IN & BOARDING",
+    "category": "Check-in & Boarding",
+    "title": "Airport Self-Service Kiosks & Bag Drop Procedures",
+    "keywords": ["kiosk", "self-service", "bag drop", "print boarding pass", "luggage tag"],
+    "content": "Passengers holding confirmed e-tickets can utilize self-service kiosks located at Terminal Entrances 1, 3, and 5 to print boarding passes and generate automated baggage tags. Once tags are securely attached to luggage handles, proceed to the Automated Bag Drop counters (Counters 12-28). Self-service check-in kiosks accept Booking Reference (PNR), e-ticket numbers, or passport barcode scanning."
+  },
+  {
+    "id": "KB006",
+    "cluster": "CHECK-IN & BOARDING",
+    "category": "Check-in & Boarding",
+    "title": "Airport Security Screening Guidelines & Prohibited Items",
+    "keywords": ["security", "screening", "liquids", "prohibited", "gels", "electronics", "metal detector", "laptops"],
+    "content": "All passengers must pass through airport central security screening before entering the departure airside concourses. Liquid, Aerosol, and Gel (LAG) containers in carry-on baggage must not exceed 100ml (3.4 oz) each and must fit inside a single clear resealable plastic bag. Laptops, tablets, power banks (max 100Wh), and large electronic devices must be removed from hand luggage and placed in separate screening trays. Power banks and spare lithium batteries are strictly prohibited in checked luggage."
+  },
+  {
+    "id": "KB007",
+    "cluster": "BAGGAGE",
+    "category": "Baggage",
+    "title": "Delayed Baggage Reporting & PIR File Creation",
+    "keywords": ["delayed baggage", "baggage not arrived", "missing luggage", "luggage delayed", "pir", "property irregularity report", "baggage carousel"],
+    "content": "If your checked baggage does not arrive on the designated arrival carousel, you must immediately report to the Airport Baggage Service Desk located inside the Baggage Claim hall before exiting customs. A representative will create an official Property Irregularity Report (PIR) and issue a unique 10-character PIR reference number (e.g., DELAA12345). You can track real-time luggage delivery status online using your PIR reference. Most delayed bags are located and delivered to your designated address within 24 hours."
+  },
+  {
+    "id": "KB008",
+    "cluster": "BAGGAGE",
+    "category": "Baggage",
+    "title": "Lost & Unclaimed Baggage Claim Process",
+    "keywords": ["lost baggage", "unclaimed luggage", "lost bag claim", "baggage compensation", "missing bag"],
+    "content": "Baggage not traced within 72 hours of PIR registration is escalated to the Central Baggage Tracing Unit. If luggage remains untraced after 21 days from the date of flight arrival, the baggage is officially declared lost under Montreal Convention regulations. Passengers are entitled to submit a formal Baggage Loss Claim along with itemized receipts and their original baggage claim tags through the AeroAssist Support portal for compensation settlement."
+  },
+  {
+    "id": "KB009",
+    "cluster": "BAGGAGE",
+    "category": "Baggage",
+    "title": "Damaged Baggage Inspection & Repair Procedures",
+    "keywords": ["damaged baggage", "broken suitcase", "torn luggage", "handle broken", "wheel damaged", "cracked bag"],
+    "content": "For damaged checked baggage, passengers must notify the Airport Baggage Helpdesk within 7 days of receiving the luggage (immediate reporting in the arrivals hall is strongly recommended). An agent will inspect the damage, record photos, and issue a Damage Inspection Report (DIR). Normal wear and tear (minor scratches, scuffs, zipper pulls) are excluded, but major structural damage, broken wheels, or torn shells are covered via airline repair network or replacement compensation."
+  },
+  {
+    "id": "KB010",
+    "cluster": "BAGGAGE",
+    "category": "Baggage",
+    "title": "Standard Checked & Cabin Baggage Allowance Guidelines",
+    "keywords": ["baggage allowance", "cabin bag", "carry on size", "weight limit", "excess baggage", "luggage weight"],
+    "content": "Standard Economy Class passengers are permitted 1 piece of cabin baggage (max 7kg, 55 x 35 x 25 cm) plus 1 personal item (laptop bag/purse). Checked baggage allowances typically range from 20kg to 30kg depending on fare class and ticket tier. Excess baggage fees apply per kilogram or additional piece if purchased at airport check-in counters. Pre-booking excess baggage online up to 6 hours before departure offers up to a 35% discount."
+  },
+  {
+    "id": "KB011",
+    "cluster": "AIRPORT FACILITIES",
+    "category": "Airport Facilities",
+    "title": "Airport Lounge Access, Locations & Amenities",
+    "keywords": ["lounge", "executive lounge", "vip lounge", "lounge access", "shower", "priority pass", "terminal lounge"],
+    "content": "AeroAssist partner airports feature Premium Departure Lounges located in Terminal 1 (Mezzanine Level near Gate 14) and Terminal 2 (Airside Concourse C). Lounges offer complimentary high-speed Wi-Fi, hot buffet dining, premium beverages, shower suites, business workstations, and quiet relaxation pods. Access is complimentary for First/Business Class passengers and elite frequent flyer members; day passes can also be purchased at the lounge reception subject to capacity."
+  },
+  {
+    "id": "KB012",
+    "cluster": "AIRPORT FACILITIES",
+    "category": "Airport Facilities",
+    "title": "Airport Parking Options, Tariffs & Pre-Booking",
+    "keywords": ["parking", "car park", "short term parking", "long term parking", "valet parking", "parking fee"],
+    "content": "Airport parking facilities include Short-Stay Parking (directly opposite Terminals 1 & 2, ideal for pick-up/drop-off under 4 hours) and Long-Stay Economy Parking (connected via complimentary 24/7 terminal shuttle buses running every 8 minutes). Automated payment machines accept credit cards, mobile NFC payments, and cash. Pre-booking parking online via the airport portal at least 24 hours in advance guarantees a reserved spot and provides discounted multi-day rates."
+  },
+  {
+    "id": "KB013",
+    "cluster": "AIRPORT FACILITIES",
+    "category": "Airport Facilities",
+    "title": "Airport Ground Transportation & Terminal Transfers",
+    "keywords": ["transport", "shuttle", "inter terminal", "taxi", "metro", "bus", "transfer between terminals"],
+    "content": "Free inter-terminal electric shuttles operate 24/7 between Terminal 1 and Terminal 2 every 10 minutes from designated transit stops outside Arrivals Door 4. For city connectivity, the Airport Express Metro Station is located directly below Central Concourse with trains departing every 15 minutes. Official prepaid taxi kiosks and licensed ride-share pick-up zones are located on Ground Level Pillars 10 through 18."
+  },
+  {
+    "id": "KB014",
+    "cluster": "SHOPPING & SERVICES",
+    "category": "Shopping & Services",
+    "title": "Airport Duty Free Shopping & Customs Allowance Guide",
+    "keywords": ["duty free", "shopping", "perfume", "electronics", "liquor", "customs limit", "retail"],
+    "content": "World-class Duty Free retail stores are situated in international departures and arrivals halls. Passengers traveling on valid international boarding passes can purchase cosmetics, fragrances, electronics, confections, and spirits at tax-free prices. Standard customs import limits apply upon arrival in your destination country; please verify the allowance rules of your destination customs agency. Order-and-collect services allow passengers to browse products online and pick up at the boarding gate."
+  },
+  {
+    "id": "KB015",
+    "cluster": "SHOPPING & SERVICES",
+    "category": "Shopping & Services",
+    "title": "Dining, Food Courts & Special Dietary Options",
+    "keywords": ["restaurant", "food court", "cafe", "dining", "vegetarian", "halal", "coffee", "breakfast"],
+    "content": "Terminals offer a diverse selection of dining establishments including 24/7 coffee shops, international fast casual restaurants, local gourmet eateries, and central food courts. Vegetarian, vegan, gluten-free, and Halal-certified dining options are clearly marked with dietary symbols on restaurant directory boards across Terminal Concourse B and Concourse D."
+  },
+  {
+    "id": "KB016",
+    "cluster": "SHOPPING & SERVICES",
+    "category": "Shopping & Services",
+    "title": "Airport VAT / Tax Refund Desk Procedures",
+    "keywords": ["vat refund", "tax refund", "tax free shopping", "customs stamp", "tourist refund"],
+    "content": "International tourists departing the country can claim VAT/GST refunds on eligible retail purchases made within the last 90 days. The Customs Export Validation Desk is located before security in Terminal Departures Hall A. Passengers must present the purchased goods, original merchant tax-free invoices, passport, and boarding pass for customs stamping prior to collecting refunds at Global Blue or Planet Payment counters airside."
+  },
+  {
+    "id": "KB017",
+    "cluster": "BOOKING & PAYMENT",
+    "category": "Booking & Confirmation",
+    "title": "Booking Confirmation & E-Ticket Issuance Inquiries",
+    "keywords": ["booking confirmation", "pnr", "eticket", "ticket not received", "confirmation email", "booking reference"],
+    "content": "Upon successful ticket purchase, confirmation emails containing your 6-character PNR booking reference and 13-digit e-ticket number are delivered within 15 minutes. If you have not received your confirmation email, first check your spam/junk email folder. If payment was debited but no confirmation was issued, access the AeroAssist Booking Retrieval tool using your payment transaction ID and email address to resend your itinerary."
+  },
+  {
+    "id": "KB018",
+    "cluster": "BOOKING & PAYMENT",
+    "category": "Refunds & Payments",
+    "title": "Payment Failure & Double Charge Resolution",
+    "keywords": ["payment failed", "double charge", "money deducted", "transaction error", "bank charge", "charged twice"],
+    "content": "If your payment failed during flight reservation but funds were deducted from your bank or card account, the amount is typically held in pending settlement authorization by your banking provider. In most cases, the automated banking reconciliation system releases temporary holds within 3 to 5 business days. If funds are not restored after 5 business days, raise a support ticket with your payment transaction screenshot and bank statement for immediate finance team verification."
+  },
+  {
+    "id": "KB019",
+    "cluster": "BOOKING & PAYMENT",
+    "category": "Refunds & Payments",
+    "title": "Ticket Refund Eligibility, Processing Times & Vouchers",
+    "keywords": ["refund", "refund status", "cancel booking", "ticket refund", "refund timeline", "fare rules"],
+    "content": "Refund eligibility depends on fare conditions associated with your ticket. Fully refundable fares receive 100% refund less applicable administrative processing fees, while non-refundable fares may only qualify for airport taxes and government surcharge refunds unless cancelled due to airline schedule changes. Approved refunds are processed back to the original form of payment within 7 to 10 working days. Travel vouchers are generated instantly with a 12-month validity period."
+  },
+  {
+    "id": "KB020",
+    "cluster": "PASSENGER ASSISTANCE",
+    "category": "Passenger Assistance",
+    "title": "Wheelchair & Special Accessibility Assistance Requests",
+    "keywords": ["wheelchair", "special assistance", "disabled", "mobility", "elderly assistance", "ramp", "wchr", "wchc"],
+    "content": "Passengers requiring wheelchair or mobility assistance from airport drop-off through security, customs, and boarding should request services at least 48 hours before departure. Assistance levels include: WCHR (can walk up stairs/in cabin), WCHS (cannot climb stairs, can walk in cabin), and WCHC (completely immobile, requires cabin transfer chair). Dedicated Special Assistance reception counters are positioned adjacent to Entrance 2 in all departure terminals."
+  },
+  {
+    "id": "KB021",
+    "cluster": "PASSENGER ASSISTANCE",
+    "category": "Passenger Assistance",
+    "title": "Senior Citizen & Unaccompanied Minor Support Services",
+    "keywords": ["senior assistance", "elderly", "unaccompanied minor", "child traveling alone", "meet and assist"],
+    "content": "Specialized Meet-and-Assist personnel provide personalized navigation for senior travelers and unaccompanied minors (children aged 5-14 traveling without an adult). Airline escort staff accompany young flyers through check-in, priority security clearance, and hand them directly to the flight purser. Senior travelers can request electric buggy transport across terminal concourses at any passenger assistance kiosk."
+  },
+  {
+    "id": "KB022",
+    "cluster": "PASSENGER ASSISTANCE",
+    "category": "Passenger Assistance",
+    "title": "Airport Lost and Found Office & Property Recovery",
+    "keywords": ["lost and found", "lost item", "left on plane", "left at security", "found item", "lost property", "phone left"],
+    "content": "Items misplaced within airport terminals, security screening checkpoints, or waiting lounges are transferred to the Central Airport Lost and Found Office located in Terminal 1 Ground Floor (near Exit Gate 2). For items left on board aircraft, please contact the respective airline baggage and ground handling department directly. Found items are registered in the central inventory and stored securely for 90 days. Claims require photo ID and descriptive proof of ownership."
+  },
+  {
+    "id": "KB023",
+    "cluster": "PASSENGER ASSISTANCE",
+    "category": "General Support",
+    "title": "General Airport Information Desks & Multilingual Support",
+    "keywords": ["information desk", "helpdesk", "multilingual", "inquiry", "customer service", "general help"],
+    "content": "AeroAssist Information Desks are staffed 24/7 across all terminal arrival and departure halls. Staff provide flight schedule updates, terminal navigation directions, printed terminal guides, and multilingual translation assistance in over 12 languages. Emergency assistance call points with direct lines to airport operations are placed at 100-meter intervals throughout concourses."
+  },
+  {
+    "id": "KB024",
+    "cluster": "BOOKING & PAYMENT",
+    "category": "Booking & Confirmation",
+    "title": "Name Corrections & Passenger Travel Document Updates",
+    "keywords": ["name change", "name correction", "passport update", "spelling error", "typo", "middle name"],
+    "content": "Minor typographical spelling errors (up to 3 characters) in passenger names on flight reservations can be corrected free of charge up to 24 hours before flight departure. Substantial name changes or transferring a ticket to another person are prohibited under airline security regulations. Passport numbers and expiry dates can be updated at any time before web check-in via the AeroAssist booking management portal."
+  },
+  {
+    "id": "KB025",
+    "cluster": "BAGGAGE",
+    "category": "Baggage",
+    "title": "Special Baggage: Musical Instruments, Sports Gear & Pets",
+    "keywords": ["sports equipment", "musical instrument", "guitar", "pets", "live animals", "golf bag", "fragile luggage"],
+    "content": "Special items such as golf clubs, surfboards, bicycles, and delicate musical instruments must be packaged in appropriate hard protective cases and checked in at Oversize Baggage Counters (Counter 40). Live animals and pets traveling as manifested cargo or in-cabin must have certified veterinary health documentation and pre-approved airline pet permits submitted at least 72 hours prior to travel."
+  }
+]

@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AeroAssist AI{% endblock %}
+
+{% block content %}
+
+<!-- Header & Quick Actions -->
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-cyan); font-weight: 700;">
+      Aviation Support Operations
+    </span>
+    <h1 style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 800; color: #fff; margin-top: 0.2rem;">
+      Airport & Airways Support Dashboard
+    </h1>
+  </div>
+  
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <form method="POST" action="{{ url_for('seed_samples') }}" style="display: inline;">
+      <button type="submit" class="btn btn-outline" title="Populate 8 realistic test tickets across all airport domains">
+        🧪 Seed 8 Test Tickets
+      </button>
+    </form>
+    <a href="{{ url_for('create_ticket_view') }}" class="btn btn-primary">
+      <span>➕</span> Raise Support Ticket
+    </a>
+  </div>
+</div>
+
+<!-- Summary Stats Grid (Milestone 1) -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div>
+      <div class="stat-label">Total Tickets</div>
+      <div class="stat-value">{{ stats.total }}</div>
+    </div>
+    <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: var(--primary-cyan);">📋</div>
+  </div>
+
+  <div class="stat-card">
+    <div>
+      <div class="stat-label">Open Tickets</div>
+      <div class="stat-value" style="color: var(--status-open);">{{ stats.open }}</div>
+    </div>
+    <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: var(--status-open);">⏳</div>
+  </div>
+
+  <div class="stat-card">
+    <div>
+      <div class="stat-label">In Progress</div>
+      <div class="stat-value" style="color: var(--status-progress);">{{ stats.in_progress }}</div>
+    </div>
+    <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--status-progress);">🔄</div>
+  </div>
+
+  <div class="stat-card">
+    <div>
+      <div class="stat-label">Resolved</div>
+      <div class="stat-value" style="color: var(--status-resolved);">{{ stats.resolved }}</div>
+    </div>
+    <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--status-resolved);">✅</div>
+  </div>
+
+  <div class="stat-card">
+    <div>
+      <div class="stat-label">Escalated</div>
+      <div class="stat-value" style="color: var(--status-escalated);">{{ stats.escalated }}</div>
+    </div>
+    <div class="stat-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--status-escalated);">🚨</div>
+  </div>
+</div>
+
+<!-- From Ticket to Outcome Interactive Visual Journey Banner -->
+<div class="glass-panel" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(15, 26, 54, 0.9), rgba(11, 20, 44, 0.9));">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+    <h3 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+      <span>🛫</span> End-to-End Passenger Resolution Architecture
+    </h3>
+    <span class="badge badge-open">5-Agent Sequential Workflow</span>
+  </div>
+
+  <div class="workflow-stepper">
+    <div class="step-node active">
+      <div class="step-circle">👤</div>
+      <div class="step-title">Passenger Ticket</div>
+      <div class="step-sub">Issue Raised & Stored</div>
+    </div>
+
+    <div class="step-arrow">➔</div>
+
+    <div class="step-node active">
+      <div class="step-circle">🎯</div>
+      <div class="step-title">1. Diagnosis Agent</div>
+      <div class="step-sub">Intent & Classification</div>
+    </div>
+
+    <div class="step-arrow">➔</div>
+
+    <div class="step-node active">
+      <div class="step-circle">🔍</div>
+      <div class="step-title">2. Retrieval Agent</div>
+      <div class="step-sub">TF-IDF & Cosine RAG</div>
+    </div>
+
+    <div class="step-arrow">➔</div>
+
+    <div class="step-node active">
+      <div class="step-circle">📝</div>
+      <div class="step-title">3. Resolution Agent</div>
+      <div class="step-sub">Grounded Guidance</div>
+    </div>
+
+    <div class="step-arrow">➔</div>
+
+    <div class="step-node active">
+      <div class="step-circle">⚖️</div>
+      <div class="step-title">4. Validation Gate</div>
+      <div class="step-sub">Quality Score (70% Gate)</div>
+    </div>
+
+    <div class="step-arrow">➔</div>
+
+    <div class="step-node active">
+      <div class="step-circle">🏁</div>
+      <div class="step-title">5. Escalation Agent</div>
+      <div class="step-sub">AUTO_RESOLVE / Human</div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Tickets Panel -->
+<div class="glass-panel">
+  <div class="panel-header">
+    <div class="panel-title">
+      <span>🎫</span> Active Airport Support Tickets
+    </div>
+    <a href="{{ url_for('tickets_list') }}" class="btn-outline btn-sm">View All Tickets ➔</a>
+  </div>
+
+  {% if tickets %}
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Ticket ID</th>
+          <th>Passenger</th>
+          <th>Title & Category</th>
+          <th>Flight / PNR</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>AI Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr>
+          <td>
+            <a href="{{ url_for('ticket_detail', ticket_id=t.ticket_id) }}" style="color: var(--accent-cyan); font-weight: 700; text-decoration: none;">
+              {{ t.ticket_id }}
+            </a>
+          </td>
+          <td>
+            <div style="font-weight: 600;">{{ t.passenger_name }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim);">{{ t.passenger_email }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: #fff;">{{ t.title }}</div>
+            <div style="font-size: 0.75rem; color: var(--accent-cyan); margin-top: 0.15rem;">
+              🏷️ {{ t.category }}
+            </div>
+          </td>
+          <td>
+            {% if t.flight_number or t.booking_ref %}
+              <div style="font-size: 0.8rem; font-family: monospace; color: #7DD3FC;">
+                {{ t.flight_number or '—' }} / {{ t.booking_ref or '—' }}
+              </div>
+            {% else %}
+              <span style="color: var(--text-dim); font-size: 0.8rem;">N/A</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if t.priority == 'Critical' %}
+              <span class="badge badge-prio-critical">Critical</span>
+            {% elif t.priority == 'High' %}
+              <span class="badge badge-prio-high">High</span>
+            {% elif t.priority == 'Medium' %}
+              <span class="badge badge-prio-med">Medium</span>
+            {% else %}
+              <span class="badge badge-prio-low">Low</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if t.status == 'Resolved' %}
+              <span class="badge badge-resolved">Resolved</span>
+            {% elif t.status == 'Escalated' %}
+              <span class="badge badge-escalated">Escalated</span>
+            {% elif t.status == 'In Progress' %}
+              <span class="badge badge-progress">In Progress</span>
+            {% else %}
+              <span class="badge badge-open">Open</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if t.ai_resolution_status == 'AUTO_RESOLVE' %}
+              <span class="badge badge-resolved" title="Final Confidence: {{ (t.final_confidence * 100)|round(1) if t.final_confidence else 'N/A' }}%">
+                🤖 Auto-Resolved
+              </span>
+            {% elif t.ai_resolution_status == 'ESCALATE' %}
+              <span class="badge badge-escalated" title="Escalated to Human Support">
+                🚨 Escalated
+              </span>
+            {% else %}
+              <span class="badge badge-open">Pending AI</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display: flex; gap: 0.4rem;">
+              <a href="{{ url_for('ticket_detail', ticket_id=t.ticket_id) }}" class="btn btn-outline btn-sm">
+                Details
+              </a>
+              <a href="{{ url_for('multi_agent_studio_view', ticket_id=t.ticket_id) }}" class="btn btn-primary btn-sm">
+                ⚡ Multi-Agent
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+    <div style="font-size: 3rem; margin-bottom: 0.75rem;">✈️</div>
+    <h3>No Support Tickets Found</h3>
+    <p style="font-size: 0.9rem; margin-top: 0.3rem;">Click below to seed realistic airport domain test tickets or create a new passenger ticket.</p>
+    <div style="margin-top: 1.25rem; display: flex; justify-content: center; gap: 0.75rem;">
+      <form method="POST" action="{{ url_for('seed_samples') }}">
+        <button type="submit" class="btn btn-primary">🧪 Seed 8 Test Tickets</button>
+      </form>
+      <a href="{{ url_for('create_ticket_view') }}" class="btn btn-outline">+ Raise Ticket</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Airport Support Domain Clusters Quick Grid -->
+<div class="glass-panel">
+  <div class="panel-header">
+    <div class="panel-title">
+      <span>🌐</span> Supported Airport & Airways Domain Clusters
+    </div>
+    <a href="{{ url_for('knowledge_base_view') }}" class="btn-outline btn-sm">View Knowledge Base ➔</a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">1. Flights</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Schedules, delays, cancellations, rebooking & boarding updates.</div>
+    </div>
+    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">2. Check-in & Boarding</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Web check-in, self-service kiosks, bag drops, security rules.</div>
+    </div>
+    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">3. Baggage</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Lost/delayed baggage PIR, damaged luggage, cabin allowances.</div>
+    </div>
+    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">4. Airport Facilities</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Executive lounges, short/long-term parking, terminal shuttles.</div>
+    </div>
+    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">5. Shopping & Services</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Duty Free retail, food courts, restaurants, VAT tax refunds.</div>
+    </div>
+    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">6. Booking & Payment</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">E-tickets, payment failure reconciliation, refunds & vouchers.</div>
+    </div>
+    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">7. Passenger Assistance</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Wheelchair mobility (WCHR/WCHC), senior escorts, lost & found.</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
