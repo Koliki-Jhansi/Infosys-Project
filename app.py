@@ -56,24 +56,26 @@ def inject_global_data():
     }
 
 
+@app.after_request
+def add_header(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
 # ==========================================
 # AUTHENTICATION ROUTES
-# ==========================
+# ==========================================
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         identifier = request.form.get("identifier", "").strip()
         password = request.form.get("password", "").strip()
 
-        # Handle quick demo login buttons
-        demo_role = request.form.get("demo_login")
-        if demo_role:
-            if demo_role == "passenger":
-                identifier, password = "passenger", "pass123"
-            elif demo_role == "agent":
-                identifier, password = "agent", "agent123"
-            elif demo_role == "admin":
-                identifier, password = "admin", "admin123"
+        if not identifier or not password:
+            flash("Invalid username or password.", "danger")
+            return render_template("login.html")
 
         user = get_user_by_username_or_email(identifier)
         if user:
@@ -87,7 +89,7 @@ def login():
                 next_page = request.args.get("next")
                 return redirect(next_page or url_for("dashboard"))
 
-        flash("Invalid username/email or password.", "danger")
+        flash("Invalid username or password.", "danger")
 
     return render_template("login.html")
 

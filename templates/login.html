@@ -17,22 +17,15 @@
     </div>
 
     {% if not register_mode %}
-    <!-- Quick Demo Accounts -->
-    <div style="background: rgba(56, 189, 248, 0.08); border: 1px dashed var(--border-glow); border-radius: 10px; padding: 1rem; margin-bottom: 1.75rem;">
-      <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-cyan); font-weight: 700; display: block; margin-bottom: 0.6rem;">
-        ⚡ Instant One-Click Demo Logins
+    <!-- Demo Credentials Guide -->
+    <div style="background: rgba(56, 189, 248, 0.08); border: 1px dashed var(--border-glow); border-radius: 10px; padding: 0.9rem 1.1rem; margin-bottom: 1.75rem;">
+      <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-cyan); font-weight: 700; display: block; margin-bottom: 0.4rem;">
+        🔐 Demo Credentials
       </span>
-      <form method="POST" action="{{ url_for('login') }}" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <button type="submit" name="demo_login" value="passenger" class="btn btn-outline btn-sm" style="flex: 1;">
-          👤 Passenger
-        </button>
-        <button type="submit" name="demo_login" value="agent" class="btn btn-outline btn-sm" style="flex: 1;">
-          🛡️ Support Agent
-        </button>
-        <button type="submit" name="demo_login" value="admin" class="btn btn-outline btn-sm" style="flex: 1;">
-          ⚡ Admin
-        </button>
-      </form>
+      <div style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.6;">
+        <div>👤 <strong>Passenger:</strong> <code>passenger</code> / <code>pass123</code></div>
+        <div>🛡️ <strong>Support Agent:</strong> <code>agent</code> / <code>agent123</code></div>
+      </div>
     </div>
 
     <!-- Login Form -->

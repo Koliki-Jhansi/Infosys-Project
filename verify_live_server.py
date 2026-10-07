@@ -15,11 +15,22 @@ def run_live_verification():
     assert "AeroAssist AI" in r.text
     print("    -> OK (Landing page loaded with AeroAssist AI branding)")
 
-    print("[2] Testing POST /login (Demo Passenger Login) ...")
-    r = session.post(f"{BASE_URL}/login", data={"demo_login": "passenger"}, allow_redirects=True)
+    # Test unauthenticated access rejected
+    print("[1b] Testing unauthenticated access to /dashboard (Access Control Gate) ...")
+    r_unauth = requests.get(f"{BASE_URL}/dashboard", allow_redirects=False)
+    assert r_unauth.status_code == 302
+    assert "/login" in r_unauth.headers.get("Location", "")
+    print("    -> OK (Unauthenticated access cleanly redirected to /login)")
+
+    print("[2] Testing POST /login (Invalid & Valid Credentials) ...")
+    r_bad = session.post(f"{BASE_URL}/login", data={"identifier": "passenger", "password": "wrong_password"}, allow_redirects=True)
+    assert "Invalid username or password" in r_bad.text
+    print("    -> OK (Invalid credentials rejected)")
+
+    r = session.post(f"{BASE_URL}/login", data={"identifier": "passenger", "password": "pass123"}, allow_redirects=True)
     assert r.status_code == 200, f"Login POST failed: {r.status_code}"
     assert "Alex Morgan" in r.text
-    print("    -> OK (Authenticated as Alex Morgan)")
+    print("    -> OK (Authenticated with valid credentials as Alex Morgan)")
 
     print("[3] Testing POST /seed-samples (Populating 8 domain test tickets) ...")
     r = session.post(f"{BASE_URL}/seed-samples", allow_redirects=True)

@@ -15,18 +15,51 @@ class TestAeroAssistFunctional(unittest.TestCase):
         cls.client = app.test_client()
 
     def test_01_landing_and_login(self):
-        """Test login page and demo login."""
+        """Test login page, unauthenticated redirects, invalid credentials, valid login, and logout."""
+        # 1. Unauthenticated user accessing protected dashboard must redirect to login
+        unauth_dash = self.client.get("/dashboard")
+        self.assertEqual(unauth_dash.status_code, 302)
+        self.assertIn("/login", unauth_dash.headers.get("Location", ""))
+
+        # 2. Unauthenticated user accessing protected ticket creation must redirect to login
+        unauth_create = self.client.get("/tickets/create")
+        self.assertEqual(unauth_create.status_code, 302)
+        self.assertIn("/login", unauth_create.headers.get("Location", ""))
+
+        # 3. GET /login should render cleanly
         response = self.client.get("/login")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"AeroAssist AI", response.data)
         self.assertIn(b"Passenger & Staff Portal", response.data)
 
-        # Login with passenger demo account
+        # 4. Attempt login with empty credentials -> MUST FAIL
+        empty_res = self.client.post("/login", data={"identifier": "", "password": ""}, follow_redirects=True)
+        self.assertEqual(empty_res.status_code, 200)
+        self.assertIn(b"Invalid username or password", empty_res.data)
+
+        # 5. Attempt login with wrong credentials -> MUST FAIL
+        wrong_res = self.client.post("/login", data={"identifier": "passenger", "password": "wrong_password"}, follow_redirects=True)
+        self.assertEqual(wrong_res.status_code, 200)
+        self.assertIn(b"Invalid username or password", wrong_res.data)
+
+        # 6. Login with valid credentials -> MUST SUCCEED
         login_res = self.client.post("/login", data={
-            "demo_login": "passenger"
+            "identifier": "passenger",
+            "password": "pass123"
         }, follow_redirects=True)
         self.assertEqual(login_res.status_code, 200)
         self.assertIn(b"Alex Morgan", login_res.data)
+        self.assertIn(b"Airport & Airways Support Dashboard", login_res.data)
+
+        # 7. Logout -> MUST CLEAR SESSION and redirect to login
+        logout_res = self.client.get("/logout", follow_redirects=True)
+        self.assertEqual(logout_res.status_code, 200)
+        self.assertIn(b"You have been signed out safely", logout_res.data)
+
+        # 8. Post-logout access to protected routes must be rejected
+        post_logout = self.client.get("/dashboard")
+        self.assertEqual(post_logout.status_code, 302)
+        self.assertIn("/login", post_logout.headers.get("Location", ""))
 
     def test_02_seed_samples_and_dashboard(self):
         """Test seeding 8 test tickets and verifying dashboard stats."""
