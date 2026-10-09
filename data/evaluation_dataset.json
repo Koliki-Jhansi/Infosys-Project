@@ -1,0 +1,402 @@
+[
+  {
+    "id": "EVAL-001",
+    "scenario": "General online check-in instructions",
+    "title": "How to check in online for upcoming domestic flight",
+    "description": "I have a flight tomorrow morning and want to know the step-by-step procedure to check in online from my phone and get my boarding pass.",
+    "expected_category": "Check-in & Boarding",
+    "expected_kb_id": "KB004",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-002",
+    "scenario": "General online check-in instructions",
+    "title": "Online web check in opening hours and rules",
+    "description": "When does web check in open before departure and what documents do I need to complete mobile check in?",
+    "expected_category": "Check-in & Boarding",
+    "expected_kb_id": "KB004",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-003",
+    "scenario": "Boarding pass questions",
+    "title": "How do I download my digital boarding pass to Apple Wallet",
+    "description": "I completed web check in but I cannot find where to download and save the barcode boarding pass to my mobile phone wallet.",
+    "expected_category": "Check-in & Boarding",
+    "expected_kb_id": "KB004",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-004",
+    "scenario": "Boarding pass questions",
+    "title": "Self service kiosk boarding pass printing at airport",
+    "description": "Can I print a physical paper boarding pass at the self-service kiosks at the terminal if my phone battery dies?",
+    "expected_category": "Check-in & Boarding",
+    "expected_kb_id": "KB005",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-005",
+    "scenario": "Booking confirmation",
+    "title": "How to check booking confirmation and PNR status",
+    "description": "I need to verify my booking confirmation and download my e-ticket itinerary with my 6-letter booking reference.",
+    "expected_category": "Booking & Confirmation",
+    "expected_kb_id": "KB017",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-006",
+    "scenario": "Booking confirmation",
+    "title": "Minor typo in passenger first name on e-ticket",
+    "description": "There is a single character typo in my first name on my booking. What is the policy for minor name corrections on e-tickets?",
+    "expected_category": "Booking & Confirmation",
+    "expected_kb_id": "KB024",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-007",
+    "scenario": "Flight delays and cancellations",
+    "title": "Flight delayed over 3 hours what refreshment vouchers are provided",
+    "description": "My flight is delayed by 4 hours due to operational backlog. Am I entitled to meal and beverage vouchers at airport food courts?",
+    "expected_category": "Delays & Cancellations",
+    "expected_kb_id": "KB001",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-008",
+    "scenario": "Flight delays and cancellations",
+    "title": "Flight cancelled by airline what are my rebooking options",
+    "description": "The airline cancelled my evening flight. How do I rebook onto the next available flight or request a travel voucher?",
+    "expected_category": "Delays & Cancellations",
+    "expected_kb_id": "KB002",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-009",
+    "scenario": "Baggage problems",
+    "title": "Checked suitcase missing at baggage carousel PIR report",
+    "description": "Landed from flight BA204 and my luggage did not arrive on belt 3. Where is the baggage service desk to file a Property Irregularity Report?",
+    "expected_category": "Baggage",
+    "expected_kb_id": "KB007",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-010",
+    "scenario": "Baggage problems",
+    "title": "Damaged suitcase wheel cracked during transit claim",
+    "description": "Retrieved my checked suitcase from baggage claim and noticed a broken wheel and crack in the hard shell. How do I file a Damage Information Report?",
+    "expected_category": "Baggage",
+    "expected_kb_id": "KB009",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-011",
+    "scenario": "Baggage problems",
+    "title": "What is the standard cabin baggage allowance and dimensions",
+    "description": "I want to know the maximum dimensions and weight limit for carry-on hand luggage and overhead bin bags.",
+    "expected_category": "Baggage",
+    "expected_kb_id": "KB010",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-012",
+    "scenario": "Refund and payment questions",
+    "title": "Duplicate charge on credit card for flight reservation",
+    "description": "I was charged twice on my credit card statement for a single flight booking transaction. How do I get the duplicate charge reversed?",
+    "expected_category": "Refunds & Payments",
+    "expected_kb_id": "KB018",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-013",
+    "scenario": "Refund and payment questions",
+    "title": "Ticket refund eligibility and processing timeline",
+    "description": "How long does a refundable ticket refund take to process back to the original form of payment?",
+    "expected_category": "Refunds & Payments",
+    "expected_kb_id": "KB019",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-014",
+    "scenario": "Airport facilities and navigation",
+    "title": "Airport lounge access requirements and day pass locations",
+    "description": "Where are the premium passenger lounges located in Terminal 1 and can economy passengers buy a one-time lounge pass?",
+    "expected_category": "Airport Facilities",
+    "expected_kb_id": "KB011",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-015",
+    "scenario": "Airport facilities and navigation",
+    "title": "Long term parking rates and shuttle bus terminal transfer",
+    "description": "I need information on long term economy parking rates, parking lot reservation, and shuttle frequency between parking and departures.",
+    "expected_category": "Airport Facilities",
+    "expected_kb_id": "KB012",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-016",
+    "scenario": "Passenger assistance",
+    "title": "Request wheelchair mobility assistance WCHR from curb to gate",
+    "description": "My elderly mother needs wheelchair assistance at the airport from the departures check-in entrance all the way to boarding gate.",
+    "expected_category": "Passenger Assistance",
+    "expected_kb_id": "KB020",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-017",
+    "scenario": "Passenger assistance",
+    "title": "Unaccompanied minor service rules for child traveling alone",
+    "description": "What are the requirements and escort procedures for a 10 year old child traveling alone as an unaccompanied minor?",
+    "expected_category": "Passenger Assistance",
+    "expected_kb_id": "KB021",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-018",
+    "scenario": "Passenger assistance",
+    "title": "Lost item left behind at airport security checkpoint",
+    "description": "I accidentally left my tablet at the security screening tray. Where is the airport lost and found office located?",
+    "expected_category": "Passenger Assistance",
+    "expected_kb_id": "KB022",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-019",
+    "scenario": "Shopping & Services",
+    "title": "Duty free liquor and perfume customs allowance guidelines",
+    "description": "What are the duty-free purchase limits for alcohol, tobacco, and fragrances when traveling on international flights?",
+    "expected_category": "Shopping & Services",
+    "expected_kb_id": "KB014",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-020",
+    "scenario": "Shopping & Services",
+    "title": "VAT tax refund desk location and invoice stamping",
+    "description": "Where can international tourists get their tax refund forms stamped and claim VAT refund before security clearance?",
+    "expected_category": "Shopping & Services",
+    "expected_kb_id": "KB016",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-021",
+    "scenario": "Ambiguous or incomplete requests",
+    "title": "Help needed urgently",
+    "description": "Something went wrong with my travel please fix it right now.",
+    "expected_category": "General Support",
+    "expected_kb_id": null,
+    "requires_human_support": true,
+    "expected_decision": "ESCALATE"
+  },
+  {
+    "id": "EVAL-022",
+    "scenario": "Ambiguous or incomplete requests",
+    "title": "Travel problem",
+    "description": "Can you check my status?",
+    "expected_category": "General Support",
+    "expected_kb_id": null,
+    "requires_human_support": true,
+    "expected_decision": "ESCALATE"
+  },
+  {
+    "id": "EVAL-023",
+    "scenario": "Questions requiring human intervention",
+    "title": "Emergency medical repatriation and stretcher clearance on flight",
+    "description": "We need immediate operational clearance for a critical care patient needing oxygen supply and stretcher installation across 6 aircraft seats.",
+    "expected_category": "Passenger Assistance",
+    "expected_kb_id": null,
+    "requires_human_support": true,
+    "expected_decision": "ESCALATE"
+  },
+  {
+    "id": "EVAL-024",
+    "scenario": "Questions requiring human intervention",
+    "title": "Live flight runway diversion and emergency hotel billing authorization",
+    "description": "Our diverted aircraft landed at an unscheduled military airfield due to severe turbulence. Passenger requesting immediate authorized expense override.",
+    "expected_category": "Delays & Cancellations",
+    "expected_kb_id": null,
+    "requires_human_support": true,
+    "expected_decision": "ESCALATE"
+  },
+  {
+    "id": "EVAL-025",
+    "scenario": "Questions requiring human intervention",
+    "title": "Special diplomatic courier weapon transport protocol exception",
+    "description": "Armed diplomatic escort courier carrying diplomatic pouch seeking exemption from standard commercial baggage hold firearm lockbox procedure.",
+    "expected_category": "General Support",
+    "expected_kb_id": null,
+    "requires_human_support": true,
+    "expected_decision": "ESCALATE"
+  },
+  {
+    "id": "EVAL-026",
+    "scenario": "Questions for which the knowledge base has no reliable answer",
+    "title": "Cryptocurrency Bitcoin payment for duty free luxury watches",
+    "description": "Do terminal duty free retailers accept direct Ethereum or Bitcoin cryptocurrency transfer payments at the checkout register?",
+    "expected_category": "Shopping & Services",
+    "expected_kb_id": null,
+    "requires_human_support": true,
+    "expected_decision": "ESCALATE"
+  },
+  {
+    "id": "EVAL-027",
+    "scenario": "Questions for which the knowledge base has no reliable answer",
+    "title": "Helicopter rooftop transfer between terminal roof and private villa",
+    "description": "Is there a private helipad on Terminal 3 roof offering charter transfers directly to residential villas?",
+    "expected_category": "Airport Facilities",
+    "expected_kb_id": null,
+    "requires_human_support": true,
+    "expected_decision": "ESCALATE"
+  },
+  {
+    "id": "EVAL-028",
+    "scenario": "General online check-in instructions",
+    "title": "Web check-in not recognizing booking reference PNR",
+    "description": "I am trying to check in online on the airline website but it says invalid PNR. What are the common troubleshooting steps?",
+    "expected_category": "Check-in & Boarding",
+    "expected_kb_id": "KB004",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-029",
+    "scenario": "Boarding pass questions",
+    "title": "Lost printed boarding pass after passing security checkpoint",
+    "description": "I misplaced my physical printed boarding pass in the departure concourse. How do I get a replacement reprint before boarding?",
+    "expected_category": "Check-in & Boarding",
+    "expected_kb_id": "KB003",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-030",
+    "scenario": "Baggage problems",
+    "title": "Lost baggage tracking after 5 days who to contact",
+    "description": "My baggage has been delayed for 5 days. What is the process for submitting a formal lost baggage claim and inventory form?",
+    "expected_category": "Baggage",
+    "expected_kb_id": "KB008",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-031",
+    "scenario": "Baggage problems",
+    "title": "Excess baggage fee cost and pre-purchase discount",
+    "description": "How much does excess baggage cost per kilogram at the airport desk and can I buy extra baggage allowance online at a discount?",
+    "expected_category": "Baggage",
+    "expected_kb_id": "KB010",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-032",
+    "scenario": "Refund and payment questions",
+    "title": "Paid seat selection refund after involuntary flight schedule change",
+    "description": "I paid $50 for extra legroom seats but the airline changed the aircraft model and moved me to standard seating. How do I claim a seat fee refund?",
+    "expected_category": "Refunds & Payments",
+    "expected_kb_id": "KB019",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-033",
+    "scenario": "Airport facilities and navigation",
+    "title": "Terminal inter-transfer train schedule and connectivity",
+    "description": "How do I travel between Terminal 1 and Terminal 2 for my connecting flight, and is the airside shuttle train free of charge?",
+    "expected_category": "Airport Facilities",
+    "expected_kb_id": "KB013",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-034",
+    "scenario": "Passenger assistance",
+    "title": "Guide dog service animal travel requirements in cabin",
+    "description": "What certified documentation and veterinary vaccination records are required to bring an accredited guide dog inside the aircraft cabin?",
+    "expected_category": "Passenger Assistance",
+    "expected_kb_id": "KB025",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-035",
+    "scenario": "Questions requiring human intervention",
+    "title": "Passenger deported by immigration seeking ticket refund cash payout",
+    "description": "Inadmissible passenger denied entry by border control demanding immediate cash settlement and rerouting to third country.",
+    "expected_category": "Refunds & Payments",
+    "expected_kb_id": null,
+    "requires_human_support": true,
+    "expected_decision": "ESCALATE"
+  },
+  {
+    "id": "EVAL-036",
+    "scenario": "Flight delays and cancellations",
+    "title": "Overnight flight delay hotel accommodation voucher counter",
+    "description": "My flight was delayed overnight due to crew scheduling. Where do I collect hotel stay vouchers and bus transfer passes?",
+    "expected_category": "Delays & Cancellations",
+    "expected_kb_id": "KB001",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-037",
+    "scenario": "Boarding pass questions",
+    "title": "Airport security LAG liquid restrictions 100ml rule",
+    "description": "What are the airport security screening rules for carrying liquids, gels, aerosol sprays, and baby milk in cabin baggage?",
+    "expected_category": "Check-in & Boarding",
+    "expected_kb_id": "KB006",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-038",
+    "scenario": "Shopping & Services",
+    "title": "Airport dining options halal and kosher dietary availability",
+    "description": "Are there certified halal, kosher, or vegan food restaurants and cafes in the international departure area?",
+    "expected_category": "Shopping & Services",
+    "expected_kb_id": "KB015",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-039",
+    "scenario": "Booking confirmation",
+    "title": "Resend e-ticket receipt and tax invoice email",
+    "description": "I did not receive my e-ticket PDF receipt for my corporate expense report. How do I get my booking invoice resent?",
+    "expected_category": "Booking & Confirmation",
+    "expected_kb_id": "KB017",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  },
+  {
+    "id": "EVAL-040",
+    "scenario": "Questions for which the knowledge base has no reliable answer",
+    "title": "Can I bring fireworks and flares in checked luggage",
+    "description": "I have celebration fireworks and signal flares that I want to transport in my checked luggage box.",
+    "expected_category": "Check-in & Boarding",
+    "expected_kb_id": "KB006",
+    "requires_human_support": false,
+    "expected_decision": "AUTO_RESOLVE"
+  }
+]

@@ -4,6 +4,7 @@ Main Flask Web Application
 """
 import os
 import json
+import math
 from datetime import datetime, date
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
@@ -14,8 +15,15 @@ load_dotenv()
 from database import (
     init_db, get_user_by_username_or_email, get_user_by_id, create_user,
     create_ticket, get_ticket_by_id, get_all_tickets, get_ticket_stats,
-    update_ticket_ai_results, get_agent_runs_for_ticket, get_next_ticket_id
+    update_ticket_ai_results, get_agent_runs_for_ticket, get_next_ticket_id,
+    is_user_authorized_for_ticket, get_dashboard_analytics,
+    create_contact_message, get_contact_messages,
+    update_ticket_jira_info, get_existing_jira_for_ticket,
+    get_ai_performance_kpis, get_ai_performance_over_time,
+    get_category_ai_performance, get_ai_confidence_distribution,
+    get_agent_stage_performance, get_ai_performance_insights
 )
+from jira_service import create_jira_issue, get_jira_config
 from classifier import get_classifier, CATEGORIES
 from priority import calculate_priority
 from severity import calculate_severity
@@ -65,17 +73,105 @@ def add_header(response):
 
 
 # ==========================================
+# PUBLIC & WELCOME ROUTES
+# ==========================================
+@app.route("/")
+def index():
+    """Root route: Redirect to dashboard if logged in, else show welcome page."""
+    if "user_id" in session:
+        return redirect(url_for("dashboard"))
+    try:
+        from rag import load_knowledge_base
+        kb_count = len(load_knowledge_base())
+    except Exception:
+        kb_count = 566
+    return render_template("welcome.html", kb_total_count=kb_count)
+
+
+@app.route("/welcome")
+def welcome():
+    """Public Airport Welcome Page."""
+    try:
+        from rag import load_knowledge_base
+        kb_count = len(load_knowledge_base())
+    except Exception:
+        kb_count = 566
+    return render_template("welcome.html", kb_total_count=kb_count)
+
+
+@app.route("/about")
+def about():
+    """Public About Section."""
+    return redirect(url_for("welcome") + "#about")
+
+
+@app.route("/services")
+def services():
+    """Public Services Section."""
+    return redirect(url_for("welcome") + "#services")
+
+
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    """Public Contact Us Page and Inbound Message Handler."""
+    if request.method == "POST":
+        # Anti-spam honeypot check: if website field is filled by bot, drop silently
+        if request.form.get("website"):
+            flash("Message submitted successfully.", "success")
+            return redirect(url_for("contact"))
+
+        full_name = request.form.get("full_name", "").strip()
+        email = request.form.get("email", "").strip()
+        subject = request.form.get("subject", "").strip()
+        message = request.form.get("message", "").strip()
+
+        # Field validation
+        if not full_name or not email or not subject or not message:
+            flash("All fields are required. Please complete all fields before sending.", "danger")
+            return render_template("contact.html")
+
+        if "@" not in email or "." not in email:
+            flash("Please provide a valid email address.", "danger")
+            return render_template("contact.html")
+
+        if len(message) < 5:
+            flash("Please provide a detailed message (minimum 5 characters).", "danger")
+            return render_template("contact.html")
+
+        # Securely persist contact message in database for support review
+        ip_addr = request.headers.get("X-Forwarded-For", request.remote_addr)
+        msg_id = create_contact_message(
+            full_name=full_name,
+            email=email,
+            subject=subject,
+            message=message,
+            ip_address=ip_addr
+        )
+
+        flash(
+            f"Thank you, {full_name}! Your support inquiry (Ref #{msg_id}) has been recorded. "
+            f"Our airline support operations team will review it and reply to {email} shortly.",
+            "success"
+        )
+        return redirect(url_for("contact"))
+
+    return render_template("contact.html")
+
+
+# ==========================================
 # AUTHENTICATION ROUTES
 # ==========================================
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    register_mode = request.args.get("tab") == "register"
+
     if request.method == "POST":
         identifier = request.form.get("identifier", "").strip()
         password = request.form.get("password", "").strip()
 
         if not identifier or not password:
             flash("Invalid username or password.", "danger")
-            return render_template("login.html")
+            return render_template("login.html", register_mode=False)
 
         user = get_user_by_username_or_email(identifier)
         if user:
@@ -90,8 +186,9 @@ def login():
                 return redirect(next_page or url_for("dashboard"))
 
         flash("Invalid username or password.", "danger")
+        return render_template("login.html", register_mode=False)
 
-    return render_template("login.html")
+    return render_template("login.html", register_mode=register_mode)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -100,10 +197,15 @@ def register():
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
         full_name = request.form.get("full_name", "").strip()
 
         if not username or not email or not password or not full_name:
             flash("All fields are required.", "danger")
+            return render_template("login.html", register_mode=True)
+
+        if confirm_password and password != confirm_password:
+            flash("Passwords do not match. Please re-enter your password.", "danger")
             return render_template("login.html", register_mode=True)
 
         user_id = create_user(username, email, password, full_name, role="passenger")
@@ -128,9 +230,8 @@ def logout():
 
 
 # ==========================================
-# DASHBOARD & TICKETS (MILESTONE 1)
+# PASSENGER DASHBOARD & TICKETS
 # ==========================================
-@app.route("/")
 @app.route("/dashboard")
 @login_required
 def dashboard():
@@ -138,13 +239,49 @@ def dashboard():
     role = user["role"] if user else "passenger"
     user_id = user["id"] if user else None
 
+    resolution_status = request.args.get("resolution_status", "All")
+
     stats = get_ticket_stats(user_id=user_id, role=role)
-    recent_tickets = get_all_tickets(user_id=user_id, role=role)[:6]
+    analytics = get_dashboard_analytics(user_id=user_id, role=role)
+    ai_kpis = get_ai_performance_kpis(user_id=user_id, role=role, date_range="all")
+    ai_time_series = get_ai_performance_over_time(user_id=user_id, role=role, date_range="all")
+    category_ai = get_category_ai_performance(user_id=user_id, role=role)
+    confidence_dist = get_ai_confidence_distribution(user_id=user_id, role=role)
+    agent_stages = get_agent_stage_performance(user_id=user_id, role=role)
+    ai_insights = get_ai_performance_insights(user_id=user_id, role=role)
 
-    return render_template("dashboard.html", stats=stats, tickets=recent_tickets)
+    recent_tickets = get_all_tickets(
+        user_id=user_id,
+        role=role,
+        resolution_status=resolution_status
+    )[:8]
+    
+    # Real Knowledge Base count
+    try:
+        from rag import load_knowledge_base
+        kb_articles = load_knowledge_base()
+        kb_total_count = len(kb_articles)
+    except Exception:
+        kb_total_count = 566
+
+    return render_template(
+        "dashboard.html",
+        stats=stats,
+        analytics=analytics,
+        ai_kpis=ai_kpis,
+        ai_time_series=ai_time_series,
+        category_ai=category_ai,
+        confidence_dist=confidence_dist,
+        agent_stages=agent_stages,
+        ai_insights=ai_insights,
+        kb_total_count=kb_total_count,
+        tickets=recent_tickets,
+        resolution_status=resolution_status
+    )
 
 
-@app.route("/tickets")
+@app.route("/tickets", endpoint="tickets_list")
+@app.route("/tickets/list", endpoint="tickets")
 @login_required
 def tickets_list():
     user = get_current_user()
@@ -153,6 +290,7 @@ def tickets_list():
 
     selected_category = request.args.get("category", "All")
     selected_status = request.args.get("status", "All")
+    selected_resolution = request.args.get("resolution_status", "All")
     search_query = request.args.get("q", "").strip()
 
     ticket_items = get_all_tickets(
@@ -160,7 +298,8 @@ def tickets_list():
         status=selected_status,
         search=search_query,
         user_id=user_id,
-        role=role
+        role=role,
+        resolution_status=selected_resolution
     )
 
     return render_template(
@@ -168,11 +307,13 @@ def tickets_list():
         tickets=ticket_items,
         selected_category=selected_category,
         selected_status=selected_status,
+        selected_resolution=selected_resolution,
         search_query=search_query
     )
 
 
-@app.route("/tickets/create", methods=["GET", "POST"])
+@app.route("/tickets/create", methods=["GET", "POST"], endpoint="create_ticket_view")
+@app.route("/tickets/new", methods=["GET", "POST"], endpoint="create_ticket")
 @login_required
 def create_ticket_view():
     user = get_current_user()
@@ -227,7 +368,8 @@ def create_ticket_view():
     return render_template("create_ticket.html")
 
 
-@app.route("/tickets/<ticket_id>")
+@app.route("/tickets/<ticket_id>", endpoint="ticket_detail")
+@app.route("/tickets/detail/<ticket_id>", endpoint="ticket_detail_view")
 @login_required
 def ticket_detail(ticket_id):
     ticket = get_ticket_by_id(ticket_id)
@@ -235,9 +377,18 @@ def ticket_detail(ticket_id):
         flash(f"Ticket {ticket_id} not found.", "danger")
         return redirect(url_for("tickets_list"))
 
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    # Ownership check
+    if role == "passenger" and ticket["passenger_id"] and ticket["passenger_id"] != user_id:
+        flash("Access denied. You are only authorized to view your own support tickets.", "danger")
+        return redirect(url_for("tickets_list"))
+
     agent_runs = get_agent_runs_for_ticket(ticket_id)
 
-    # Compute Milestone 2 RAG preview for ticket details display
+    # Compute RAG preview for ticket details display
     rag_pipe = get_rag_pipeline()
     rag_preview = rag_pipe.process_query(
         title=ticket["title"],
@@ -255,53 +406,100 @@ def ticket_detail(ticket_id):
 
 
 # ==========================================
-# MILESTONE 2: DEDICATED AI KNOWLEDGE RESOLUTION
+# AI SOLUTIONS RESULT PAGE
 # ==========================================
-@app.route("/tickets/<ticket_id>/ai-resolution")
+@app.route("/ai-solutions", endpoint="ai_solutions_view")
+@app.route("/ai-solutions/view", endpoint="ai_solutions")
+@app.route("/tickets/<ticket_id>/ai-resolution", endpoint="m2_ai_resolution_view")
 @login_required
-def m2_ai_resolution_view(ticket_id):
-    """Milestone 2 Dedicated Page: Airport Knowledge Resolution via TF-IDF + Cosine RAG."""
-    ticket = get_ticket_by_id(ticket_id)
-    if not ticket:
-        flash(f"Ticket {ticket_id} not found.", "danger")
-        return redirect(url_for("tickets_list"))
+def ai_solutions_view(ticket_id=None):
+    """AI Solutions Result Page: Displays tickets whose persisted final decision is AUTO_RESOLVE."""
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
 
-    # Execute Milestone 2 RAG Pipeline
-    rag_pipe = get_rag_pipeline()
-    rag_result = rag_pipe.process_query(
-        title=ticket["title"],
-        description=ticket["description"],
-        category=ticket["category"],
-        metadata={"flight_number": ticket["flight_number"], "booking_ref": ticket["booking_ref"]}
+    if not ticket_id:
+        ticket_id = request.args.get("ticket_id")
+
+    # Fetch only tickets whose persisted decision is AUTO_RESOLVE
+    auto_resolved_tickets = get_all_tickets(
+        user_id=user_id,
+        role=role,
+        resolution_status="AUTO_RESOLVE"
     )
+
+    selected_ticket = None
+    latest_run = None
+    agent_runs = []
+    rag_preview = None
+
+    if ticket_id:
+        ticket = get_ticket_by_id(ticket_id)
+        if ticket:
+            if role == "passenger" and ticket["passenger_id"] and ticket["passenger_id"] != user_id:
+                flash("Access denied. You are not authorized to view this ticket.", "danger")
+                return redirect(url_for("ai_solutions_view"))
+            selected_ticket = ticket
+            agent_runs = get_agent_runs_for_ticket(ticket_id)
+            latest_run = agent_runs[0] if agent_runs else None
+        else:
+            flash(f"Ticket {ticket_id} not found.", "danger")
 
     return render_template(
-        "m2_ai_resolution.html",
-        ticket=ticket,
-        rag_result=rag_result
+        "ai_resolution.html",
+        tickets=auto_resolved_tickets,
+        selected_ticket=selected_ticket,
+        latest_run=latest_run,
+        agent_runs=agent_runs
     )
 
 
-# ==========================================
-# MILESTONE 3: DEDICATED MULTI-AGENT STUDIO
-# ==========================================
-@app.route("/tickets/<ticket_id>/multi-agent")
-@app.route("/tickets/<ticket_id>/resolve")
-@login_required
-def multi_agent_studio_view(ticket_id):
-    """Milestone 3 Dedicated Page: Five-Agent Sequential Aviation Resolution Studio."""
-    ticket = get_ticket_by_id(ticket_id)
-    if not ticket:
-        flash(f"Ticket {ticket_id} not found.", "danger")
-        return redirect(url_for("tickets_list"))
 
-    agent_runs = get_agent_runs_for_ticket(ticket_id)
-    latest_run = agent_runs[0] if agent_runs else None
+# ==========================================
+# MULTI-AGENT RESOLUTION WORKFLOW
+# ==========================================
+@app.route("/multi-agent", endpoint="multi_agent_studio_view")
+@app.route("/multi-agent/view", endpoint="multi_agent")
+@app.route("/tickets/<ticket_id>/multi-agent", endpoint="multi_agent_ticket")
+@app.route("/tickets/<ticket_id>/resolve", endpoint="multi_agent_resolve")
+@login_required
+def multi_agent_studio_view(ticket_id=None):
+    """Five-Agent Sequential Aviation Resolution Studio."""
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    if not ticket_id:
+        ticket_id = request.args.get("ticket_id")
+
+    user_tickets = get_all_tickets(user_id=user_id, role=role)
+    selected_ticket = None
+    latest_run = None
+    agent_runs = []
+
+    if ticket_id:
+        selected_ticket = get_ticket_by_id(ticket_id)
+        if selected_ticket:
+            if role == "passenger" and selected_ticket["passenger_id"] and selected_ticket["passenger_id"] != user_id:
+                flash("Access denied. You are not authorized to view this ticket.", "danger")
+                return redirect(url_for("multi_agent_studio_view"))
+            
+            agent_runs = get_agent_runs_for_ticket(ticket_id)
+            latest_run = agent_runs[0] if agent_runs else None
+        else:
+            flash(f"Ticket {ticket_id} not found.", "danger")
+
+    elif user_tickets:
+        selected_ticket = user_tickets[0]
+        agent_runs = get_agent_runs_for_ticket(selected_ticket["ticket_id"])
+        latest_run = agent_runs[0] if agent_runs else None
 
     return render_template(
         "multi_agent.html",
-        ticket=ticket,
-        latest_run=latest_run
+        ticket=selected_ticket,
+        tickets=user_tickets,
+        latest_run=latest_run,
+        agent_runs=agent_runs
     )
 
 
@@ -312,6 +510,13 @@ def run_agents_api(ticket_id):
     ticket = get_ticket_by_id(ticket_id)
     if not ticket:
         return jsonify({"success": False, "error": "Ticket not found"}), 404
+
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    if role == "passenger" and ticket["passenger_id"] and ticket["passenger_id"] != user_id:
+        return jsonify({"success": False, "error": "Unauthorized access to this ticket"}), 403
 
     ticket_dict = dict(ticket)
     mas = get_multi_agent_system()
@@ -341,14 +546,388 @@ def rag_preview_api():
 
 
 # ==========================================
-# KNOWLEDGE BASE BROWSER
+# MILESTONE 4: ANALYTICS REST API ENDPOINTS
 # ==========================================
-@app.route("/knowledge-base")
+
+@app.route("/api/analytics/ai-performance", methods=["GET"])
 @login_required
+def api_ai_performance():
+    """
+    Returns AI Performance KPIs and time-series history.
+    Query param: ?range=7d | 30d | all (default: all)
+    """
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    date_range = request.args.get("range", "all").lower()
+    if date_range not in ["7d", "30d", "all"]:
+        date_range = "all"
+
+    kpis = get_ai_performance_kpis(user_id=user_id, role=role, date_range=date_range)
+    time_series = get_ai_performance_over_time(user_id=user_id, role=role, date_range=date_range)
+
+    return jsonify({
+        "success": True,
+        "kpis": kpis,
+        "time_series": time_series
+    })
+
+
+@app.route("/api/analytics/category-performance", methods=["GET"])
+@login_required
+def api_category_performance():
+    """
+    Returns category-wise auto-resolution, escalation rates and ticket counts.
+    """
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    categories = get_category_ai_performance(user_id=user_id, role=role)
+    return jsonify({
+        "success": True,
+        "categories": categories
+    })
+
+
+@app.route("/api/analytics/agent-performance", methods=["GET"])
+@login_required
+def api_agent_performance():
+    """
+    Returns stage scores (Diagnosis, Retrieval, Completeness, Final) and bottleneck identification.
+    """
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    stages = get_agent_stage_performance(user_id=user_id, role=role)
+    return jsonify({
+        "success": True,
+        "agent_performance": stages
+    })
+
+
+@app.route("/api/analytics/decision-distribution", methods=["GET"])
+@login_required
+def api_decision_distribution():
+    """
+    Returns ticket decision distribution comparing auto-resolved, escalated, and unprocessed tickets.
+    """
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    kpis = get_ai_performance_kpis(user_id=user_id, role=role, date_range="all")
+    return jsonify({
+        "success": True,
+        "total_tickets": kpis["total_tickets"],
+        "total_processed": kpis["total_processed"],
+        "unprocessed_count": kpis["unprocessed_count"],
+        "auto_resolve_count": kpis["auto_resolve_count"],
+        "escalation_count": kpis["escalation_count"],
+        "auto_resolve_rate": kpis["auto_resolve_rate"],
+        "escalation_rate": kpis["escalation_rate"]
+    })
+
+
+@app.route("/api/analytics/confidence-distribution", methods=["GET"])
+@login_required
+def api_confidence_distribution():
+    """
+    Returns distribution of processed tickets across confidence score bands (<40%, 40-69.99%, 70-100%).
+    """
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    dist = get_ai_confidence_distribution(user_id=user_id, role=role)
+    return jsonify({
+        "success": True,
+        "confidence_distribution": dist
+    })
+
+
+@app.route("/api/analytics/insights", methods=["GET"])
+@login_required
+def api_ai_insights():
+    """
+    Returns factual, database-measured trend and bottleneck insights.
+    """
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    insights_data = get_ai_performance_insights(user_id=user_id, role=role)
+    return jsonify({
+        "success": True,
+        "insights": insights_data
+    })
+
+
+@app.route("/api/analytics/evaluation-report", methods=["GET"])
+@login_required
+def api_evaluation_report():
+    """
+    Runs or returns standardized evaluation benchmark report with accuracy, precision, recall, and F1 metrics.
+    """
+    try:
+        from evaluate_ai import run_evaluation
+        report = run_evaluation()
+        return jsonify({
+            "success": True,
+            "report": report
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
+# ==========================================
+# ESCALATED TICKETS PAGE
+# ==========================================
+@app.route("/escalated-tickets", endpoint="escalated_tickets_view")
+@app.route("/escalated-tickets/view", endpoint="escalated_tickets")
+@login_required
+def escalated_tickets_view():
+    """Displays tickets where final AI decision is ESCALATE."""
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    ticket_id = request.args.get("ticket_id")
+    search_query = request.args.get("q", "").strip()
+
+    escalated_items = get_all_tickets(
+        user_id=user_id,
+        role=role,
+        resolution_status="ESCALATE",
+        search=search_query
+    )
+
+    selected_ticket = None
+    latest_run = None
+    agent_runs = []
+
+    if ticket_id:
+        ticket = get_ticket_by_id(ticket_id)
+        if ticket:
+            if role == "passenger" and ticket["passenger_id"] and ticket["passenger_id"] != user_id:
+                flash("Access denied. You are not authorized to view this ticket.", "danger")
+                return redirect(url_for("escalated_tickets_view"))
+            selected_ticket = ticket
+            agent_runs = get_agent_runs_for_ticket(ticket_id)
+            latest_run = agent_runs[0] if agent_runs else None
+        else:
+            flash(f"Ticket {ticket_id} not found.", "danger")
+
+    return render_template(
+        "escalated_tickets.html",
+        tickets=escalated_items,
+        selected_ticket=selected_ticket,
+        latest_run=latest_run,
+        agent_runs=agent_runs,
+        search_query=search_query
+    )
+
+
+@app.context_processor
+def inject_jira_globals():
+    cfg = get_jira_config()
+    return {
+        "jira_is_configured": cfg.get("is_configured", False),
+        "jira_project_key": cfg.get("project_key", "SUP")
+    }
+
+
+@app.route("/tickets/<ticket_id>/create-jira", methods=["POST"], endpoint="create_jira_sync_route")
+@app.route("/tickets/<ticket_id>/retry-jira", methods=["POST"], endpoint="retry_jira_sync")
+@login_required
+def retry_jira_sync(ticket_id):
+    """Creates or retries Jira synchronization for an escalated passenger ticket."""
+    ticket = get_ticket_by_id(ticket_id)
+    if not ticket:
+        flash(f"Ticket {ticket_id} not found.", "danger")
+        return redirect(url_for("escalated_tickets_view"))
+
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    if role == "passenger" and ticket["passenger_id"] and ticket["passenger_id"] != user_id:
+        flash("Access denied. You are not authorized to manage this ticket.", "danger")
+        return redirect(url_for("escalated_tickets_view"))
+
+    # If already created, avoid duplicate Jira issue creation
+    if ticket["jira_issue_key"] and (ticket["jira_sync_status"] or "").lower() == "created":
+        flash(f"Ticket {ticket_id} is already linked to Jira issue {ticket['jira_issue_key']}.", "info")
+        referrer = request.referrer
+        if referrer and ("escalated-tickets" in referrer or "tickets" in referrer):
+            return redirect(referrer)
+        return redirect(url_for("escalated_tickets_view", ticket_id=ticket_id))
+
+    escalation_payload = {
+        "escalation_reason": ticket["escalation_reason"] or "Manual support escalation sync.",
+        "final_confidence": ticket["final_confidence"] or 0.495,
+        "threshold": 0.70,
+        "retrieved_kb_id": ticket["retrieved_kb_id"],
+        "retrieval_similarity": ticket["retrieval_similarity"],
+        "resolution_text": ticket["resolution_text"]
+    }
+
+    jira_res = create_jira_issue(
+        ticket_data=dict(ticket),
+        escalation_payload=escalation_payload,
+        existing_issue_key=ticket["jira_issue_key"],
+        existing_issue_url=ticket["jira_issue_url"]
+    )
+
+    update_ticket_jira_info(ticket_id, jira_res)
+
+    if jira_res.get("jira_created"):
+        flash(f"Jira sync successful! Created issue {jira_res.get('issue_key')}.", "success")
+    elif (jira_res.get("status") or "").lower() in ["not configured", "not_configured"]:
+        flash(f"Jira integration is not configured in server environment: {jira_res.get('message')}", "warning")
+    else:
+        flash(f"Jira sync failed: {jira_res.get('last_error') or jira_res.get('message')}", "danger")
+
+    referrer = request.referrer
+    if referrer and ("escalated-tickets" in referrer or "tickets" in referrer):
+        return redirect(referrer)
+    return redirect(url_for("escalated_tickets_view", ticket_id=ticket_id))
+
+
+@app.route("/api/tickets/<ticket_id>/jira", methods=["POST"])
+def api_create_or_sync_jira(ticket_id):
+    """
+    Protected JSON API endpoint to create/sync Jira issue for an escalated ticket.
+    - Authenticates current user
+    - Verifies ticket exists
+    - Verifies ticket belongs to escalated workflow (confidence < 0.70 / ESCALATE)
+    - Performs duplicate protection if Jira key already exists
+    - Calls existing Jira service and persists result
+    - Returns safe JSON fields without sensitive credentials
+    """
+    user = get_current_user()
+    if not user:
+        return jsonify({
+            "success": False,
+            "error": "Authentication required. Please log in."
+        }), 401
+
+    ticket = get_ticket_by_id(ticket_id)
+    if not ticket:
+        return jsonify({
+            "success": False,
+            "error": f"Ticket {ticket_id} not found."
+        }), 404
+
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+    if role == "passenger" and ticket["passenger_id"] and ticket["passenger_id"] != user_id:
+        return jsonify({
+            "success": False,
+            "error": "Access denied. You are not authorized to manage this ticket."
+        }), 403
+
+    # Decision threshold verification: confidence >= 0.70 is AUTO_RESOLVE, no Jira
+    final_conf = ticket["final_confidence"]
+    if ticket["ai_resolution_status"] == "AUTO_RESOLVE" or (final_conf is not None and final_conf >= 0.70):
+        return jsonify({
+            "success": False,
+            "error": f"Ticket {ticket_id} has final confidence >= 0.70 (AUTO_RESOLVE). Jira tickets are only created for ESCALATED tickets."
+        }), 400
+
+    # Duplicate protection check
+    if ticket["jira_issue_key"] and (ticket["jira_sync_status"] or "").lower() == "created":
+        return jsonify({
+            "success": True,
+            "status": "CREATED",
+            "jira_issue_key": ticket["jira_issue_key"],
+            "jira_issue_url": ticket["jira_issue_url"],
+            "message": f"Reused existing Jira escalation issue {ticket['jira_issue_key']}."
+        }), 200
+
+    escalation_payload = {
+        "escalation_reason": ticket["escalation_reason"] or "Manual support escalation sync.",
+        "final_confidence": ticket["final_confidence"] or 0.495,
+        "threshold": 0.70,
+        "retrieved_kb_id": ticket["retrieved_kb_id"],
+        "retrieval_similarity": ticket["retrieval_similarity"],
+        "resolution_text": ticket["resolution_text"]
+    }
+
+    jira_res = create_jira_issue(
+        ticket_data=dict(ticket),
+        escalation_payload=escalation_payload,
+        existing_issue_key=ticket["jira_issue_key"],
+        existing_issue_url=ticket["jira_issue_url"]
+    )
+
+    update_ticket_jira_info(ticket_id, jira_res)
+
+    if jira_res.get("jira_created"):
+        return jsonify({
+            "success": True,
+            "status": "CREATED",
+            "jira_issue_key": jira_res.get("issue_key"),
+            "jira_issue_url": jira_res.get("issue_url")
+        }), 200
+    elif (jira_res.get("status") or "").lower() in ["not configured", "not_configured"]:
+        return jsonify({
+            "success": False,
+            "status": "NOT_CONFIGURED",
+            "message": "Jira credentials are not configured in the server environment."
+        }), 200
+    else:
+        return jsonify({
+            "success": False,
+            "status": "FAILED",
+            "error": jira_res.get("last_error") or jira_res.get("message") or "Jira issue creation failed."
+        }), 200
+
+
+
+
+# ==========================================
+# PASSENGER PROFILE
+# ==========================================
+@app.route("/profile", endpoint="profile_view")
+@app.route("/profile/view", endpoint="profile")
+@login_required
+def profile_view():
+    """Passenger Profile and statistics view."""
+    user = get_current_user()
+    role = user["role"] if user else "passenger"
+    user_id = user["id"] if user else None
+
+    stats = get_ticket_stats(user_id=user_id, role=role)
+    user_tickets = get_all_tickets(user_id=user_id, role=role)[:5]
+
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        tickets=user_tickets
+    )
+
+
+# ==========================================
+# KNOWLEDGE BASE BROWSER (PUBLIC & AUTHENTICATED)
+# ==========================================
+@app.route("/knowledge-base", endpoint="knowledge_base_view")
+@app.route("/knowledge-base/view", endpoint="knowledge_base")
+@app.route("/knowledge_base", endpoint="knowledge_base_alt")
 def knowledge_base_view():
     articles = load_knowledge_base()
+    total_articles_count = len(articles)
+
     selected_cluster = request.args.get("cluster", "All")
     search = request.args.get("q", "").strip().lower()
+    page = int(request.args.get("page", 1))
+    per_page = 15
 
     filtered = articles
     if selected_cluster != "All":
@@ -360,8 +939,33 @@ def knowledge_base_view():
             if search in a["title"].lower() or search in a["content"].lower() or any(search in kw.lower() for kw in a.get("keywords", []))
         ]
 
-    clusters = ["FLIGHTS", "CHECK-IN & BOARDING", "BAGGAGE", "AIRPORT FACILITIES", "SHOPPING & SERVICES", "BOOKING & PAYMENT", "PASSENGER ASSISTANCE"]
-    return render_template("knowledge_base.html", articles=filtered, clusters=clusters, selected_cluster=selected_cluster, search=search)
+    total_filtered = len(filtered)
+    total_pages = max(1, math.ceil(total_filtered / per_page))
+    page = min(max(1, page), total_pages)
+    start_idx = (page - 1) * per_page
+    paginated_articles = filtered[start_idx:start_idx + per_page]
+
+    clusters = [
+        "FLIGHTS",
+        "CHECK-IN & BOARDING",
+        "BAGGAGE",
+        "AIRPORT FACILITIES",
+        "SHOPPING & SERVICES",
+        "BOOKING & PAYMENT",
+        "PASSENGER ASSISTANCE"
+    ]
+
+    return render_template(
+        "knowledge_base.html",
+        articles=paginated_articles,
+        clusters=clusters,
+        selected_cluster=selected_cluster,
+        search=search,
+        total_count=total_articles_count,
+        filtered_count=total_filtered,
+        page=page,
+        total_pages=total_pages
+    )
 
 
 # ==========================================

@@ -49,7 +49,7 @@ class TicketClassifier:
                 sublinear_tf=True,
                 min_df=1
             )),
-            ("clf", MultinomialNB(alpha=0.5))
+            ("clf", MultinomialNB(alpha=0.1))
         ])
 
         self.model.fit(texts, labels)

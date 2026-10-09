@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us — AeroAssist AI{% endblock %}
+{% block page_title %}Contact Operations & Support{% endblock %}
+
+{# ----------------------------------------------------------- #}
+{# AUTHENTICATED USER CONTENT (Logged In - with App Sidebar)    #}
+{# ----------------------------------------------------------- #}
+{% block content %}
+<div style="max-width: 960px; margin: 0 auto; padding: 0.5rem 0 2rem;">
+  
+  <!-- Header -->
+  <div style="margin-bottom: 2rem;">
+    <div class="hero-subtitle-badge" style="margin-bottom: 0.5rem;">PASSENGER SUPPORT INQUIRY</div>
+    <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">
+      Contact AeroAssist AI
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">
+      We're here to help you with your airport and airline support questions.
+    </p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 320px; gap: 1.75rem; align-items: start;">
+    
+    <!-- Contact Form Card -->
+    <div class="card-panel" style="padding: 1.75rem;">
+      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>✉️</span> Send Support Message
+      </h2>
+
+      <form method="POST" action="{{ url_for('contact') }}" style="display: flex; flex-direction: column; gap: 1.15rem;">
+        
+        <!-- Honeypot -->
+        <div style="display: none;">
+          <input type="text" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div>
+          <label class="form-label" for="auth_full_name">Full Name <span style="color: #EF4444;">*</span></label>
+          <input 
+            type="text" 
+            id="auth_full_name" 
+            name="full_name" 
+            class="form-control" 
+            value="{{ current_user.full_name if current_user else session.get('full_name', '') }}" 
+            required
+            maxlength="100"
+          >
+        </div>
+
+        <div>
+          <label class="form-label" for="auth_email">Email Address <span style="color: #EF4444;">*</span></label>
+          <input 
+            type="email" 
+            id="auth_email" 
+            name="email" 
+            class="form-control" 
+            value="{{ current_user.email if current_user else session.get('email', '') }}" 
+            required
+            maxlength="120"
+          >
+        </div>
+
+        <div>
+          <label class="form-label" for="auth_subject">Subject <span style="color: #EF4444;">*</span></label>
+          <input 
+            type="text" 
+            id="auth_subject" 
+            name="subject" 
+            class="form-control" 
+            placeholder="e.g. Inquiry regarding airport facilities or ticket review" 
+            required
+            maxlength="150"
+          >
+        </div>
+
+        <div>
+          <label class="form-label" for="auth_message">Message <span style="color: #EF4444;">*</span></label>
+          <textarea 
+            id="auth_message" 
+            name="message" 
+            class="form-control" 
+            rows="5" 
+            placeholder="Please detail your question or operational support inquiry..." 
+            required
+            maxlength="2000"
+            style="resize: vertical; font-family: inherit;"
+          ></textarea>
+        </div>
+
+        <div style="margin-top: 0.5rem;">
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-weight: 600; justify-content: center;">
+            <span>📨</span> Send Message
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Side Card -->
+    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+      <div class="card-panel" style="padding: 1.25rem;">
+        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🛡️</div>
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">
+          Support Operations Queue
+        </h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+          Inbound inquiries are logged directly in our verified support database for priority triage by airline ground staff.
+        </p>
+      </div>
+
+      <div class="card-panel" style="padding: 1.25rem;">
+        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎫</div>
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">
+          Need Immediate AI Diagnosis?
+        </h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.75rem;">
+          Create a tracked passenger ticket to execute our 5-agent resolution workflow.
+        </p>
+        <a href="{{ url_for('create_ticket_view') }}" class="btn btn-outline-primary btn-sm" style="width: 100%; justify-content: center;">
+          Create New Ticket ➔
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+
+{# ----------------------------------------------------------- #}
+{# PUBLIC VISITOR CONTENT (Logged Out - Full Width Page)      #}
+{# ----------------------------------------------------------- #}
+{% block public_content %}
+<div class="welcome-page-wrapper" style="background-color: #F8FAFC; min-height: 100vh; display: flex; flex-direction: column;">
+
+  <!-- 1. Top Navigation Bar -->
+  <header class="welcome-navbar">
+    <a href="{{ url_for('welcome') }}" style="display: flex; align-items: center; gap: 0.85rem; text-decoration: none;">
+      <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #0B1730, #2563EB); display: flex; align-items: center; justify-content: center; font-size: 1.35rem; color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);">
+        ✈️
+      </div>
+      <div>
+        <span style="font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">AeroAssist AI</span>
+        <span style="font-size: 0.7rem; color: #64748B; display: block; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Aviation Support Platform</span>
+      </div>
+    </a>
+
+    <!-- Navigation Links -->
+    <nav>
+      <ul class="welcome-nav-links">
+        <li><a href="{{ url_for('welcome') }}#hero" class="welcome-nav-link">Home</a></li>
+        <li><a href="{{ url_for('about') }}" class="welcome-nav-link">About</a></li>
+        <li><a href="{{ url_for('services') }}" class="welcome-nav-link">Services</a></li>
+        <li><a href="{{ url_for('knowledge_base_view') }}" class="welcome-nav-link">Knowledge Base</a></li>
+        <li><a href="{{ url_for('contact') }}" class="welcome-nav-link active">Contact</a></li>
+      </ul>
+    </nav>
+
+    <!-- Top-Right Action -->
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+          <span>📊</span> Dashboard
+        </a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary" style="padding: 0.65rem 1.4rem; font-size: 0.92rem; font-weight: 600;">
+          <span>👤</span> Passenger Login
+        </a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- 2. Main Contact Header & Form Section -->
+  <main style="flex: 1; max-width: 980px; width: 100%; margin: 0 auto; padding: 3.5rem 1.5rem 4rem;">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <div class="hero-subtitle-badge" style="margin-bottom: 0.65rem;">GET IN TOUCH</div>
+      <h1 style="font-size: 2.4rem; font-weight: 800; color: #0F172A; letter-spacing: -0.5px; margin-bottom: 0.75rem;">
+        Contact AeroAssist AI
+      </h1>
+      <p style="font-size: 1.1rem; color: #64748B; max-width: 620px; margin: 0 auto; line-height: 1.6;">
+        We're here to help you with your airport and airline support questions.
+      </p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="margin-bottom: 2rem;">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); font-weight: 500; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.2rem;">{% if category == 'success' %}✅{% elif category == 'danger' %}⚠️{% elif category == 'warning' %}🔔{% else %}ℹ️{% endif %}</span>
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div style="display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: start;">
+      
+      <!-- Contact Form Card -->
+      <div class="card-panel" style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2.25rem; box-shadow: var(--shadow-md);">
+        
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: #0F172A; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span>✉️</span> Send Support Message
+        </h2>
+
+        <form method="POST" action="{{ url_for('contact') }}" style="display: flex; flex-direction: column; gap: 1.25rem;">
+          
+          <!-- Anti-Spam Honeypot (Hidden) -->
+          <div style="display: none;">
+            <label for="website">Leave blank</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
+
+          <!-- Full Name -->
+          <div>
+            <label class="form-label" for="full_name" style="font-weight: 600; color: #334155; margin-bottom: 0.4rem; display: block; font-size: 0.9rem;">
+              Full Name <span style="color: #EF4444;">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="full_name" 
+              name="full_name" 
+              class="form-control" 
+              placeholder="e.g. Alex Morgan" 
+              value="{{ current_user.full_name if current_user else '' }}" 
+              required
+              maxlength="100"
+            >
+          </div>
+
+          <!-- Email Address -->
+          <div>
+            <label class="form-label" for="email" style="font-weight: 600; color: #334155; margin-bottom: 0.4rem; display: block; font-size: 0.9rem;">
+              Email Address <span style="color: #EF4444;">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              class="form-control" 
+              placeholder="e.g. passenger@example.com" 
+              value="{{ current_user.email if current_user else '' }}" 
+              required
+              maxlength="120"
+            >
+          </div>
+
+          <!-- Subject -->
+          <div>
+            <label class="form-label" for="subject" style="font-weight: 600; color: #334155; margin-bottom: 0.4rem; display: block; font-size: 0.9rem;">
+              Subject <span style="color: #EF4444;">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="subject" 
+              name="subject" 
+              class="form-control" 
+              placeholder="e.g. Inquiry regarding baggage claim procedures or flight transit" 
+              required
+              maxlength="150"
+            >
+          </div>
+
+          <!-- Message -->
+          <div>
+            <label class="form-label" for="message" style="font-weight: 600; color: #334155; margin-bottom: 0.4rem; display: block; font-size: 0.9rem;">
+              Message <span style="color: #EF4444;">*</span>
+            </label>
+            <textarea 
+              id="message" 
+              name="message" 
+              class="form-control" 
+              rows="5" 
+              placeholder="Please describe your question or issue in detail..." 
+              required
+              maxlength="2000"
+              style="resize: vertical; font-family: inherit;"
+            ></textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <div style="margin-top: 0.5rem;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem; font-weight: 600; justify-content: center; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);">
+              <span>📨</span> Send Message
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Information Sidecard -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        
+        <div class="card-panel" style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(37, 99, 235, 0.12); color: #2563EB; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 0.75rem;">
+            🛡️
+          </div>
+          <h3 style="font-size: 1.05rem; font-weight: 700; color: #0F172A; margin-bottom: 0.35rem;">
+            Passenger Support Operations
+          </h3>
+          <p style="font-size: 0.85rem; color: #64748B; line-height: 1.6; margin: 0;">
+            All inbound messages are securely logged in the AeroAssist AI operational support queue and reviewed by authorized airline customer-care personnel.
+          </p>
+        </div>
+
+        <div class="card-panel" style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(16, 185, 129, 0.12); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 0.75rem;">
+            📚
+          </div>
+          <h3 style="font-size: 1.05rem; font-weight: 700; color: #0F172A; margin-bottom: 0.35rem;">
+            Instant Self-Service
+          </h3>
+          <p style="font-size: 0.85rem; color: #64748B; line-height: 1.6; margin-bottom: 0.85rem;">
+            Have a common airport query? Search across our verified procedural database.
+          </p>
+          <a href="{{ url_for('knowledge_base_view') }}" class="btn btn-outline-primary btn-sm" style="width: 100%; justify-content: center;">
+            Search Knowledge Base ➔
+          </a>
+        </div>
+
+        <div class="card-panel" style="background: linear-gradient(135deg, #0B1730, #1E3A8A); border-radius: var(--radius-lg); padding: 1.5rem; color: #FFFFFF; box-shadow: var(--shadow-md);">
+          <div style="font-size: 0.75rem; color: #38BDF8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.35rem;">
+            Registered Passengers
+          </div>
+          <h4 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem;">
+            Have an active booking or ticket?
+          </h4>
+          <p style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.5; margin-bottom: 1rem;">
+            Sign in to track real-time AI diagnoses, check status, or create prioritized dispute tickets.
+          </p>
+          <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm" style="background-color: #2563EB; border-color: #2563EB; width: 100%; justify-content: center;">
+            Sign In to Passenger Portal
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- 3. Footer -->
+  <footer style="text-align: center; padding: 2rem 1.5rem; color: var(--text-dim); font-size: 0.85rem; border-top: 1px solid var(--border-color); background-color: #FFFFFF; margin-top: auto;">
+    <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 0.35rem;">
+      AeroAssist AI &bull; Intelligent Airport & Airways Customer Support Platform
+    </div>
+    <div>
+      &copy; 2026 AeroAssist AI Platform. All rights reserved.
+    </div>
+  </footer>
+
+</div>
+{% endblock %}

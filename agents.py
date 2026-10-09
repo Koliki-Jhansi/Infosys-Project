@@ -28,7 +28,7 @@ DECISION_THRESHOLD = float(os.getenv("DECISION_THRESHOLD", "0.70"))
 class DiagnosisAgent:
     """
     Agent 1: Understands passenger issue, extracts intent and entities,
-    and produces structured diagnosis with confidence score.
+    and produces structured diagnosis with statistical classification confidence score.
     """
     def __init__(self):
         self.classifier = get_classifier()
@@ -42,53 +42,127 @@ class DiagnosisAgent:
         category = cls_result["predicted_category"]
         raw_conf = cls_result["confidence"]
 
-        # Intent extraction via domain patterns
+        # Semantic intent extraction distinguishing procedures vs errors vs requests
         intent = self._extract_intent(title, description, category)
         
         # Entity extraction (flight number, PNR, terminal/airport)
         entities = self._extract_entities(title, description, ticket_data)
 
-        # Calibrated diagnosis confidence (bounded 0.0 - 1.0)
-        # Higher confidence when clear domain intent and metadata are present
-        if raw_conf > 0.35:
-            diag_conf = min(0.96, 0.70 + (raw_conf * 0.30))
-        else:
-            diag_conf = raw_conf * 1.5
-
-        if len(description.strip()) > 30:
-            diag_conf = min(0.98, diag_conf + 0.05)
-        if entities.get("flight_number") or entities.get("booking_ref"):
-            diag_conf = min(0.98, diag_conf + 0.03)
+        # Genuine statistical diagnosis confidence from classification engine
+        diag_conf = round(float(raw_conf), 4)
 
         return {
             "agent_name": "Diagnosis Agent",
             "category": category,
             "intent": intent,
-            "diagnosis": f"Passenger is experiencing a {category.lower()} issue regarding '{intent}'.",
+            "diagnosis": f"Passenger inquiry regarding {category.lower()} categorized under '{intent}'.",
             "extracted_entities": entities,
-            "confidence": round(float(diag_conf), 4),
+            "confidence": diag_conf,
             "status": "COMPLETED"
         }
 
     def _extract_intent(self, title: str, description: str, category: str) -> str:
         text = f"{title} {description}".lower()
-        if "lost" in text or "missing" in text:
-            return "Lost or missing property / baggage inquiry"
-        elif "delay" in text or "late" in text:
-            return "Flight delay and passenger care inquiry"
-        elif "cancel" in text:
-            return "Flight cancellation and rebooking assistance"
-        elif "check-in" in text or "boarding pass" in text:
-            return "Check-in or boarding pass generation error"
-        elif "refund" in text or "payment" in text or "charge" in text:
-            return "Refund request or payment reconciliation"
-        elif "wheelchair" in text or "special assistance" in text or "senior" in text:
-            return "Special accessibility or passenger assistance request"
-        elif "lounge" in text or "parking" in text or "transport" in text:
-            return "Airport facilities and amenity inquiry"
-        elif "duty free" in text or "food" in text or "restaurant" in text:
-            return "Airport shopping and retail service inquiry"
-        return f"Passenger inquiry relating to {category}"
+
+        # 1. Check-in & Boarding
+        if category == "Check-in & Boarding" or any(k in text for k in ["check-in", "check in", "boarding", "kiosk", "security"]):
+            if any(err in text for err in ["error", "fail", "failed", "crash", "unable", "not working", "stuck", "cannot", "can't", "issue", "problem"]):
+                if "boarding pass" in text:
+                    return "Boarding pass generation and download error"
+                return "Online check-in failure and error troubleshooting"
+            elif any(proc in text for proc in ["how to check in", "online check-in", "web check-in", "mobile check-in", "check in online", "check-in process", "check-in procedure", "steps to check in", "complete online check-in"]):
+                return "General online check-in procedure and steps"
+            elif any(bp in text for bp in ["lost printed boarding pass", "misplaced", "lost boarding pass", "reprint boarding pass"]):
+                return "Boarding gate departure and boarding pass reprint assistance"
+            elif any(bp in text for bp in ["boarding pass", "digital boarding pass", "wallet", "bar code", "qr code", "print pass"]):
+                if any(proc in text for proc in ["how", "obtain", "get", "download", "save", "retrieve"]):
+                    return "Digital boarding pass issuance and retrieval"
+                return "Boarding pass generation and wallet storage"
+            elif any(k in text for k in ["kiosk", "self-service", "bag drop", "tag"]):
+                return "Airport self-service kiosk and automated bag drop"
+            elif any(k in text for k in ["gate", "zone", "final call", "departure time"]):
+                return "Boarding gate departure and zone sequencing"
+            elif any(k in text for k in ["security", "screening", "liquid", "100ml", "lag", "prohibited", "laptop", "scanner", "fireworks", "flares", "hazardous"]):
+                return "Airport security screening guidelines and prohibited items"
+            return "General online check-in procedure and steps"
+
+        # 2. Baggage
+        elif category == "Baggage" or any(k in text for k in ["baggage", "luggage", "suitcase", "carry-on", "cabin bag", "checked bag"]):
+            if any(k in text for k in ["cabin", "carry-on", "carry on", "hand luggage", "overhead bin", "size allowed", "cabin baggage"]):
+                return "Cabin baggage allowance and dimension guidelines"
+            elif any(k in text for k in ["checked", "check in bag", "how many bags", "weight allowed", "per bag", "checked baggage"]):
+                return "Checked baggage allowance and weight limits"
+            elif any(k in text for k in ["delay", "delayed", "not arrive", "missing luggage", "carousel", "pir", "property irregularity"]):
+                return "Delayed baggage reporting and PIR file creation"
+            elif any(k in text for k in ["lost", "unclaimed", "21 days", "declare lost", "lost baggage claim", "compensation"]):
+                return "Lost baggage claim process and compensation"
+            elif any(k in text for k in ["damaged", "broken", "cracked", "torn", "wheel", "handle broken"]):
+                return "Damaged baggage inspection and repair claims"
+            elif any(k in text for k in ["excess", "extra weight", "overweight", "pre-book baggage"]):
+                return "Excess baggage purchase and overweight charges"
+            elif any(k in text for k in ["instrument", "sport", "pet", "special luggage"]):
+                return "Special baggage, sporting equipment, and pet transport"
+            return "Baggage allowance and luggage policy inquiry"
+
+        # 3. Delays & Cancellations
+        elif category == "Delays & Cancellations" or any(k in text for k in ["delay", "cancel", "reschedule", "late"]):
+            if any(k in text for k in ["cancel", "cancelled", "canceled", "rebook"]):
+                return "Flight cancellation procedures and rebooking options"
+            elif any(k in text for k in ["delay", "delayed", "voucher", "refreshment", "meal", "hotel", "late"]):
+                return "Flight delay policy, compensation, and refreshment care"
+            return "Flight disruption and schedule change assistance"
+
+        # 4. Booking & Confirmation
+        elif category == "Booking & Confirmation" or any(k in text for k in ["booking", "e-ticket", "pnr", "itinerary", "name"]):
+            if any(k in text for k in ["name", "correction", "passport update", "spelling"]):
+                return "Passenger name correction and travel document update"
+            elif any(k in text for k in ["confirm", "e-ticket", "receipt", "pnr", "itinerary"]):
+                return "Booking confirmation, PNR lookup, and e-ticket issuance"
+            return "Booking management and reservation inquiry"
+
+        # 5. Refunds & Payments
+        elif category == "Refunds & Payments" or any(k in text for k in ["refund", "payment", "charge", "fare", "voucher"]):
+            if any(k in text for k in ["double", "duplicate", "failed", "card error"]):
+                return "Payment failure and duplicate charge resolution"
+            elif any(k in text for k in ["ancillary", "seat selection", "meal refund", "priority boarding"]):
+                return "Paid ancillary and add-on service fee refund"
+            elif any(k in text for k in ["refund", "reimburse", "claim cash"]):
+                return "Ticket refund eligibility, processing times, and vouchers"
+            return "Fare payment and refund inquiry"
+
+        # 6. Airport Facilities
+        elif category == "Airport Facilities" or any(k in text for k in ["lounge", "parking", "terminal", "wifi"]):
+            if any(k in text for k in ["lounge", "vip", "club"]):
+                return "Airport lounge access, locations, and amenities"
+            elif any(k in text for k in ["parking", "park", "tariff", "car"]):
+                return "Airport parking options, tariffs, and pre-booking"
+            elif any(k in text for k in ["transport", "shuttle", "bus", "train", "transfer", "inter-transfer", "terminal transfer"]):
+                return "Airport ground transportation and terminal transfers"
+            return "Airport facilities, navigation, and amenities"
+
+        # 7. Shopping & Services
+        elif category == "Shopping & Services" or any(k in text for k in ["duty free", "tax", "vat", "dining", "restaurant", "food"]):
+            if any(k in text for k in ["duty free", "duty-free", "customs allowance", "liquor", "tobacco"]):
+                return "Airport duty free shopping and customs allowances"
+            elif any(k in text for k in ["tax", "vat", "tourist refund"]):
+                return "Airport VAT / Tax refund desk procedures"
+            elif any(k in text for k in ["food", "dining", "restaurant", "dietary", "halal", "kosher"]):
+                return "Dining, food courts, and special dietary options"
+            return "Airport commercial retail and dining services"
+
+        # 8. Passenger Assistance
+        elif category == "Passenger Assistance" or any(k in text for k in ["wheelchair", "special assistance", "senior", "elderly", "minor", "child", "guide dog", "service animal"]):
+            if any(k in text for k in ["wheelchair", "prm", "mobility", "disabled"]):
+                return "Wheelchair and special mobility assistance requests"
+            elif any(k in text for k in ["senior", "elderly", "unaccompanied minor", "child alone"]):
+                return "Senior citizen and unaccompanied minor passenger care"
+            elif any(k in text for k in ["lost and found", "left behind", "property recovery"]):
+                return "Airport lost and found office and property recovery"
+            elif any(k in text for k in ["guide dog", "service animal"]):
+                return "Special passenger assistance and accredited guide dog travel"
+            return "Special passenger assistance and accessibility support"
+
+        return f"Passenger inquiry regarding {category}"
 
     def _extract_entities(self, title: str, description: str, ticket_data: Dict) -> Dict[str, Optional[str]]:
         combined = f"{title} {description}"
@@ -135,6 +209,7 @@ class RetrievalAgent:
             "top_article": top_art,
             "similarity_score": round(float(sim_score), 4),
             "ranked_articles": retrieval_res["ranked_articles"],
+            "top_5_articles": retrieval_res.get("top_5_articles", retrieval_res["ranked_articles"][:5]),
             "relevance_threshold": retrieval_res["relevance_threshold"],
             "status": "COMPLETED"
         }
@@ -185,8 +260,8 @@ class ResolutionAgent:
                 f"Recommended Next Steps:\n" + "\n".join([f"{i+1}. {s}" for i, s in enumerate(steps)]) +
                 "\n\nIf you require further on-ground assistance, please present this ticket ID at our customer service counter."
             )
-            # Completeness is high when strong knowledge match is found
-            completeness = 0.95 if sim_score >= 0.40 else 0.82
+            # Completeness is high (0.95) when actionable guidance steps are present
+            completeness = 0.95 if len(steps) >= 3 else (0.85 if len(steps) >= 1 else 0.70)
 
         return {
             "agent_name": "Resolution Agent",
@@ -319,7 +394,11 @@ class EscalationAgent:
                 "jira_status": jira_res.get("status", "Not Configured"),
                 "jira_created": jira_res.get("jira_created", False),
                 "jira_issue_key": jira_res.get("issue_key"),
+                "jira_issue_id": jira_res.get("issue_id"),
                 "jira_issue_url": jira_res.get("issue_url"),
+                "jira_sync_status": jira_res.get("sync_status", "Not Configured"),
+                "jira_last_error": jira_res.get("last_error"),
+                "jira_created_at": jira_res.get("created_at"),
                 "jira_message": jira_res.get("message"),
                 "email_status": email_res.get("status", "Not Configured"),
                 "email_message": email_res.get("message"),

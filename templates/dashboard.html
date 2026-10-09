@@ -1,288 +1,879 @@
 {% extends "base.html" %}
 
 {% block title %}Dashboard - AeroAssist AI{% endblock %}
+{% block page_title %}AI Operations & Passenger Support Dashboard{% endblock %}
 
 {% block content %}
 
-<!-- Header & Quick Actions -->
-<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+<!-- Header & Welcome Banner -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
   <div>
-    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-cyan); font-weight: 700;">
-      Aviation Support Operations
-    </span>
-    <h1 style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 800; color: #fff; margin-top: 0.2rem;">
-      Airport & Airways Support Dashboard
+    <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); line-height: 1.2;">
+      Good to see you, {{ session.get('full_name', 'Passenger') }}
     </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+      Real-time multi-agent resolution metrics, quality validation gates, and ticket analytics.
+    </p>
   </div>
-  
-  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-    <form method="POST" action="{{ url_for('seed_samples') }}" style="display: inline;">
-      <button type="submit" class="btn btn-outline" title="Populate 8 realistic test tickets across all airport domains">
-        🧪 Seed 8 Test Tickets
-      </button>
-    </form>
+
+  <div style="display: flex; gap: 0.75rem; align-items: center;">
     <a href="{{ url_for('create_ticket_view') }}" class="btn btn-primary">
-      <span>➕</span> Raise Support Ticket
+      <span>➕</span> New Ticket
+    </a>
+    <a href="{{ url_for('multi_agent_studio_view') }}" class="btn btn-secondary">
+      <span>🤖</span> Multi-Agent Studio
     </a>
   </div>
 </div>
 
-<!-- Summary Stats Grid (Milestone 1) -->
-<div class="stats-grid">
-  <div class="stat-card">
+<!-- SECTION 1: SEVEN METRIC KPI CARDS (Calculated from Actual Database Records) -->
+<div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+  
+  <!-- 1. Total Processed Tickets -->
+  <div class="kpi-card" title="Total tickets processed by multi-agent system">
     <div>
-      <div class="stat-label">Total Tickets</div>
-      <div class="stat-value">{{ stats.total }}</div>
+      <div class="kpi-label">Processed Tickets (Total Tickets: {{ ai_kpis.total_tickets }})</div>
+      <div class="kpi-value" id="kpiTotalProcessed">{{ ai_kpis.total_processed }}</div>
+      <div class="kpi-sub">
+        <span style="font-weight: 600; color: var(--primary-blue);">{{ ai_kpis.unprocessed_count }}</span> unprocessed / open
+      </div>
     </div>
-    <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: var(--primary-cyan);">📋</div>
+    <div class="kpi-icon-wrap" style="background-color: var(--primary-blue-light); color: var(--primary-blue);">
+      🤖
+    </div>
   </div>
 
-  <div class="stat-card">
+  <!-- 2. AI Auto-Resolution Rate -->
+  <div class="kpi-card" title="Percentage of processed tickets resolved automatically (Confidence >= 70%)">
     <div>
-      <div class="stat-label">Open Tickets</div>
-      <div class="stat-value" style="color: var(--status-open);">{{ stats.open }}</div>
+      <div class="kpi-label">AI Resolved Rate</div>
+      <div class="kpi-value" id="kpiAutoResolveRate" style="color: var(--emerald-text);">{{ ai_kpis.auto_resolve_rate }}%</div>
+      <div class="kpi-sub">AI Resolved: {{ ai_kpis.auto_resolve_count }} / {{ ai_kpis.total_processed }} tickets (&ge; 70%)</div>
     </div>
-    <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: var(--status-open);">⏳</div>
+    <div class="kpi-icon-wrap" style="background-color: var(--emerald-light); color: var(--emerald-text);">
+      ✅
+    </div>
   </div>
 
-  <div class="stat-card">
+  <!-- 3. AI Escalation Rate -->
+  <div class="kpi-card" title="Percentage of tickets requiring human support handoff">
     <div>
-      <div class="stat-label">In Progress</div>
-      <div class="stat-value" style="color: var(--status-progress);">{{ stats.in_progress }}</div>
+      <div class="kpi-label">Escalated Rate</div>
+      <div class="kpi-value" id="kpiEscalationRate" style="color: var(--crimson-text);">{{ ai_kpis.escalation_rate }}%</div>
+      <div class="kpi-sub">Escalated: {{ ai_kpis.escalation_count }} / {{ ai_kpis.total_processed }} to Ground Team</div>
     </div>
-    <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--status-progress);">🔄</div>
+    <div class="kpi-icon-wrap" style="background-color: var(--crimson-light); color: var(--crimson-text);">
+      🚨
+    </div>
   </div>
 
-  <div class="stat-card">
+  <!-- 4. Average Final AI Confidence -->
+  <div class="kpi-card" title="Mean weighted confidence score across all processed tickets">
     <div>
-      <div class="stat-label">Resolved</div>
-      <div class="stat-value" style="color: var(--status-resolved);">{{ stats.resolved }}</div>
+      <div class="kpi-label">Avg Final Confidence</div>
+      <div class="kpi-value" id="kpiAvgConfidence" style="color: var(--primary-blue);">{{ ai_kpis.average_confidence }}%</div>
+      <div class="kpi-sub">Quality gate threshold: 70%</div>
     </div>
-    <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--status-resolved);">✅</div>
+    <div class="kpi-icon-wrap" style="background-color: var(--primary-blue-light); color: var(--primary-blue);">
+      🎯
+    </div>
   </div>
 
-  <div class="stat-card">
+  <!-- 5. Low-Confidence Tickets (< 70%) -->
+  <div class="kpi-card" title="Processed tickets below 70% decision threshold">
     <div>
-      <div class="stat-label">Escalated</div>
-      <div class="stat-value" style="color: var(--status-escalated);">{{ stats.escalated }}</div>
+      <div class="kpi-label">Low Confidence (<70%)</div>
+      <div class="kpi-value" id="kpiLowConfidence" style="color: var(--amber-text);">{{ ai_kpis.low_confidence_count }}</div>
+      <div class="kpi-sub">Triggered human review</div>
     </div>
-    <div class="stat-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--status-escalated);">🚨</div>
+    <div class="kpi-icon-wrap" style="background-color: var(--amber-light); color: var(--amber-text);">
+      ⚠️
+    </div>
+  </div>
+
+  <!-- 6. Low Retrieval Similarity (< 40%) -->
+  <div class="kpi-card" title="Processed tickets with retrieval similarity below 40%">
+    <div>
+      <div class="kpi-label">Low Similarity (<40%)</div>
+      <div class="kpi-value" id="kpiLowSimilarity" style="color: var(--purple-text);">{{ ai_kpis.low_similarity_count }}</div>
+      <div class="kpi-sub">Knowledge base edge cases</div>
+    </div>
+    <div class="kpi-icon-wrap" style="background-color: var(--purple-light); color: var(--purple-text);">
+      🔍
+    </div>
+  </div>
+
+  <!-- 7. Verified Resolution Accuracy -->
+  <div class="kpi-card" title="Accuracy measured on ground-truth evaluation dataset (40 benchmark cases)">
+    <div>
+      <div class="kpi-label">Verified Accuracy</div>
+      <div class="kpi-value" style="color: var(--emerald-text);">
+        {% if ai_kpis.verified_accuracy %}{{ ai_kpis.verified_accuracy }}%{% else %}N/A{% endif %}
+      </div>
+      <div class="kpi-sub">
+        {% if ai_kpis.evaluation_sample_size %}Sample size: {{ ai_kpis.evaluation_sample_size }} benchmark cases{% else %}Evaluation benchmark{% endif %}
+      </div>
+    </div>
+    <div class="kpi-icon-wrap" style="background-color: var(--emerald-light); color: var(--emerald-text);">
+      🏆
+    </div>
+  </div>
+
+</div>
+
+<!-- SECTION 2: AI PERFORMANCE ANALYSIS DASHBOARD (Main Line Chart + Range Filters) -->
+<div class="card-panel" style="margin-bottom: 2rem;">
+  <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <h2 class="card-title" style="font-size: 1.25rem;">
+          <span>📈</span> AI Performance Over Time
+        </h2>
+        <span style="font-size: 0.75rem; color: var(--emerald-text); background-color: var(--emerald-light); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); font-weight: 700;">
+          ● Live DB Synchronized
+        </span>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem;">
+        Tracking AI Auto-Resolution Rate, Escalation Rate, and Mean AI Confidence across processed dates.
+      </p>
+    </div>
+
+    <!-- Date Range Filter Tabs: [ 7 Days ] [ 30 Days ] [ All History ] -->
+    <div style="display: flex; gap: 0.5rem; background-color: var(--bg-surface-subtle); padding: 0.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+      <button type="button" class="btn btn-sm time-range-btn" data-range="7d" style="background: transparent; color: var(--text-muted); border: none; font-weight: 600; padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); cursor: pointer;">
+        Last 7 Days
+      </button>
+      <button type="button" class="btn btn-sm time-range-btn" data-range="30d" style="background: transparent; color: var(--text-muted); border: none; font-weight: 600; padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); cursor: pointer;">
+        Last 30 Days
+      </button>
+      <button type="button" class="btn btn-sm time-range-btn active" data-range="all" style="background: var(--primary-blue); color: #FFFFFF; border: none; font-weight: 600; padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); cursor: pointer;">
+        All History
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Multi-Line Chart Container -->
+  <div style="position: relative; width: 100%; min-height: 320px; height: 350px;">
+    <div id="chartLoadingOverlay" style="display: none; position: absolute; inset: 0; background: rgba(255,255,255,0.7); z-index: 5; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; color: var(--primary-blue);">
+      <span>⏳ Loading metrics...</span>
+    </div>
+    <canvas id="chartPerformanceOverTime"></canvas>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; font-size: 0.78rem; color: var(--text-muted); flex-wrap: wrap; gap: 0.5rem;">
+    <div>
+      <strong>Metric Formula:</strong> Auto-Resolve Rate = Auto-Resolved / (Auto-Resolved + Escalated) × 100% | Escalation Rate = Escalated / Processed × 100%
+    </div>
+    <div>
+      <span style="display: inline-block; width: 10px; height: 10px; background-color: #10B981; border-radius: 50%; margin-right: 4px;"></span> Auto-Resolve
+      <span style="display: inline-block; width: 10px; height: 10px; background-color: #EF4444; border-radius: 50%; margin-left: 10px; margin-right: 4px;"></span> Escalated
+      <span style="display: inline-block; width: 10px; height: 10px; background-color: #2563EB; border-radius: 50%; margin-left: 10px; margin-right: 4px;"></span> Avg Confidence
+    </div>
   </div>
 </div>
 
-<!-- From Ticket to Outcome Interactive Visual Journey Banner -->
-<div class="glass-panel" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(15, 26, 54, 0.9), rgba(11, 20, 44, 0.9));">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-    <h3 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
-      <span>🛫</span> End-to-End Passenger Resolution Architecture
-    </h3>
-    <span class="badge badge-open">5-Agent Sequential Workflow</span>
+<!-- SECTION 3: FOUR SUPPORTING AI PERFORMANCE CHARTS (2x2 Grid) -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+  
+  <!-- Chart A: Ticket Decision Distribution -->
+  <div class="card-panel" style="margin-bottom: 0;">
+    <div class="card-header" style="margin-bottom: 0.75rem;">
+      <div>
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+          <span>🍩</span> Ticket Decision Distribution
+        </h3>
+        <p style="font-size: 0.78rem; color: var(--text-muted);">
+          Auto-Resolved vs Escalated vs Unprocessed tickets
+        </p>
+      </div>
+      <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
+        Total: {{ ai_kpis.total_tickets }}
+      </div>
+    </div>
+    <div style="position: relative; min-height: 240px; height: 260px;">
+      <canvas id="chartDecisionDistribution"></canvas>
+    </div>
+    <div style="margin-top: 0.75rem; display: flex; justify-content: space-around; font-size: 0.78rem; text-align: center; border-top: 1px solid var(--border-subtle); padding-top: 0.5rem;">
+      <div>
+        <div style="color: var(--emerald-text); font-weight: 700;">{{ ai_kpis.auto_resolve_count }}</div>
+        <div style="color: var(--text-muted); font-size: 0.7rem;">Auto-Resolved</div>
+      </div>
+      <div>
+        <div style="color: var(--crimson-text); font-weight: 700;">{{ ai_kpis.escalation_count }}</div>
+        <div style="color: var(--text-muted); font-size: 0.7rem;">Escalated</div>
+      </div>
+      <div>
+        <div style="color: var(--primary-blue); font-weight: 700;">{{ ai_kpis.unprocessed_count }}</div>
+        <div style="color: var(--text-muted); font-size: 0.7rem;">Unprocessed</div>
+      </div>
+    </div>
   </div>
 
-  <div class="workflow-stepper">
-    <div class="step-node active">
-      <div class="step-circle">👤</div>
-      <div class="step-title">Passenger Ticket</div>
-      <div class="step-sub">Issue Raised & Stored</div>
+  <!-- Chart B: Category-wise AI Performance -->
+  <div class="card-panel" style="margin-bottom: 0;">
+    <div class="card-header" style="margin-bottom: 0.75rem;">
+      <div>
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+          <span>📊</span> Category Resolution & Escalation
+        </h3>
+        <p style="font-size: 0.78rem; color: var(--text-muted);">
+          Resolution vs Escalation percentage by airport category
+        </p>
+      </div>
     </div>
-
-    <div class="step-arrow">➔</div>
-
-    <div class="step-node active">
-      <div class="step-circle">🎯</div>
-      <div class="step-title">1. Diagnosis Agent</div>
-      <div class="step-sub">Intent & Classification</div>
+    <div style="position: relative; min-height: 240px; height: 260px;">
+      <canvas id="chartCategoryPerformance"></canvas>
     </div>
+  </div>
 
-    <div class="step-arrow">➔</div>
-
-    <div class="step-node active">
-      <div class="step-circle">🔍</div>
-      <div class="step-title">2. Retrieval Agent</div>
-      <div class="step-sub">TF-IDF & Cosine RAG</div>
+  <!-- Chart C: AI Confidence Distribution Bands -->
+  <div class="card-panel" style="margin-bottom: 0;">
+    <div class="card-header" style="margin-bottom: 0.75rem;">
+      <div>
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+          <span>🎯</span> Confidence Score Bands
+        </h3>
+        <p style="font-size: 0.78rem; color: var(--text-muted);">
+          Processed tickets distributed across score brackets
+        </p>
+      </div>
     </div>
-
-    <div class="step-arrow">➔</div>
-
-    <div class="step-node active">
-      <div class="step-circle">📝</div>
-      <div class="step-title">3. Resolution Agent</div>
-      <div class="step-sub">Grounded Guidance</div>
+    <div style="position: relative; min-height: 240px; height: 260px;">
+      <canvas id="chartConfidenceDistribution"></canvas>
     </div>
+  </div>
 
-    <div class="step-arrow">➔</div>
-
-    <div class="step-node active">
-      <div class="step-circle">⚖️</div>
-      <div class="step-title">4. Validation Gate</div>
-      <div class="step-sub">Quality Score (70% Gate)</div>
+  <!-- Chart D: Multi-Agent Stage Performance & Bottleneck Analysis -->
+  <div class="card-panel" style="margin-bottom: 0;">
+    <div class="card-header" style="margin-bottom: 0.75rem;">
+      <div>
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+          <span>⚙️</span> Sequential Agent Pipeline Stages
+        </h3>
+        <p style="font-size: 0.78rem; color: var(--text-muted);">
+          Stage confidence averages & bottleneck identification
+        </p>
+      </div>
+      <span style="font-size: 0.75rem; background-color: var(--amber-light); color: var(--amber-text); padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); font-weight: 700;">
+        Bottleneck: {{ agent_stages.bottleneck_stage }}
+      </span>
     </div>
-
-    <div class="step-arrow">➔</div>
-
-    <div class="step-node active">
-      <div class="step-circle">🏁</div>
-      <div class="step-title">5. Escalation Agent</div>
-      <div class="step-sub">AUTO_RESOLVE / Human</div>
+    <div style="position: relative; min-height: 240px; height: 260px;">
+      <canvas id="chartAgentPerformance"></canvas>
     </div>
+  </div>
+
+</div>
+
+<!-- SECTION 4: AI PERFORMANCE INSIGHTS (Factual Measured Insights) -->
+<div class="card-panel" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">
+        <span>💡</span> AI Performance Insights & Diagnostics
+      </h2>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.15rem;">
+        Automated data analysis based on real database records and sequential agent traces.
+      </p>
+    </div>
+    <div style="font-size: 0.8rem; color: var(--text-muted);">
+      Sample Size: <strong>{{ ai_insights.sample_size }}</strong> processed tickets
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+    {% for insight in ai_insights.insights %}
+    <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">
+            {{ insight.topic }}
+          </span>
+          {% if insight.type == 'positive' or insight.type == 'success' %}
+            <span style="font-size: 0.7rem; background-color: var(--emerald-light); color: var(--emerald-text); padding: 0.15rem 0.45rem; border-radius: var(--radius-sm); font-weight: 600;">Positive</span>
+          {% elif insight.type == 'warning' %}
+            <span style="font-size: 0.7rem; background-color: var(--amber-light); color: var(--amber-text); padding: 0.15rem 0.45rem; border-radius: var(--radius-sm); font-weight: 600;">Attention</span>
+          {% else %}
+            <span style="font-size: 0.7rem; background-color: var(--primary-blue-light); color: var(--primary-blue); padding: 0.15rem 0.45rem; border-radius: var(--radius-sm); font-weight: 600;">Information</span>
+          {% endif %}
+        </div>
+        <p style="font-size: 0.84rem; color: var(--text-main); line-height: 1.45; margin-bottom: 0.75rem;">
+          {{ insight.text }}
+        </p>
+      </div>
+      <div style="font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 0.4rem; display: flex; justify-content: space-between;">
+        <span>{% if insight.period %}Period: {{ insight.period }}{% elif insight.category %}Category: {{ insight.category }}{% elif insight.bottleneck %}Stage: {{ insight.bottleneck }}{% endif %}</span>
+        <span>{% if insight.sample_size %}N = {{ insight.sample_size }}{% endif %}</span>
+      </div>
+    </div>
+    {% endfor %}
   </div>
 </div>
 
-<!-- Recent Tickets Panel -->
-<div class="glass-panel">
-  <div class="panel-header">
-    <div class="panel-title">
-      <span>🎫</span> Active Airport Support Tickets
-    </div>
-    <a href="{{ url_for('tickets_list') }}" class="btn-outline btn-sm">View All Tickets ➔</a>
-  </div>
+<!-- SECTION 5: SUPPORT TICKETS & RECENT OUTCOMES -->
+<div style="display: grid; grid-template-columns: 2.75fr 1fr; gap: 1.75rem; align-items: flex-start; margin-bottom: 2rem;">
+  
+  <!-- Left: Large Primary Section "Your Support Tickets" -->
+  <div class="card-panel" style="margin-bottom: 0;">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">
+          <span>🎫</span> Your Support Tickets
+        </h2>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.15rem;">
+          Track ticket resolution decisions and automated quality validation.
+        </p>
+      </div>
 
-  {% if tickets %}
-  <div class="table-responsive">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Ticket ID</th>
-          <th>Passenger</th>
-          <th>Title & Category</th>
-          <th>Flight / PNR</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>AI Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for t in tickets %}
-        <tr>
-          <td>
-            <a href="{{ url_for('ticket_detail', ticket_id=t.ticket_id) }}" style="color: var(--accent-cyan); font-weight: 700; text-decoration: none;">
-              {{ t.ticket_id }}
-            </a>
-          </td>
-          <td>
-            <div style="font-weight: 600;">{{ t.passenger_name }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-dim);">{{ t.passenger_email }}</div>
-          </td>
-          <td>
-            <div style="font-weight: 600; color: #fff;">{{ t.title }}</div>
-            <div style="font-size: 0.75rem; color: var(--accent-cyan); margin-top: 0.15rem;">
-              🏷️ {{ t.category }}
-            </div>
-          </td>
-          <td>
-            {% if t.flight_number or t.booking_ref %}
-              <div style="font-size: 0.8rem; font-family: monospace; color: #7DD3FC;">
-                {{ t.flight_number or '—' }} / {{ t.booking_ref or '—' }}
+      <!-- Segmented Clickable Filter: [ All Tickets ] [ AI Resolved ] [ Escalated ] -->
+      <div class="segmented-nav">
+        <a href="{{ url_for('dashboard', resolution_status='All') }}" class="segmented-btn {% if resolution_status == 'All' or not resolution_status %}active{% endif %}">
+          All Tickets
+        </a>
+        <a href="{{ url_for('dashboard', resolution_status='AUTO_RESOLVE') }}" class="segmented-btn {% if resolution_status == 'AUTO_RESOLVE' %}active{% endif %}">
+          AI Resolved
+        </a>
+        <a href="{{ url_for('dashboard', resolution_status='ESCALATE') }}" class="segmented-btn {% if resolution_status == 'ESCALATE' %}active{% endif %}">
+          Escalated
+        </a>
+      </div>
+    </div>
+
+    {% if tickets %}
+    <!-- Professional Ticket Table -->
+    <div class="table-responsive">
+      <table class="saas-table">
+        <thead>
+          <tr>
+            <th>Ticket ID</th>
+            <th>Issue</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>AI Decision</th>
+            <th>Confidence</th>
+            <th>Date</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in tickets %}
+          <tr>
+            <td>
+              <a href="{{ url_for('ticket_detail_view', ticket_id=t.ticket_id) }}" style="font-family: monospace; font-weight: 700; color: var(--primary-blue);">
+                {{ t.ticket_id }}
+              </a>
+            </td>
+            <td>
+              <div style="font-weight: 600; color: var(--text-main); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ t.title }}">
+                {{ t.title }}
               </div>
-            {% else %}
-              <span style="color: var(--text-dim); font-size: 0.8rem;">N/A</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if t.priority == 'Critical' %}
-              <span class="badge badge-prio-critical">Critical</span>
-            {% elif t.priority == 'High' %}
-              <span class="badge badge-prio-high">High</span>
-            {% elif t.priority == 'Medium' %}
-              <span class="badge badge-prio-med">Medium</span>
-            {% else %}
-              <span class="badge badge-prio-low">Low</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if t.status == 'Resolved' %}
-              <span class="badge badge-resolved">Resolved</span>
-            {% elif t.status == 'Escalated' %}
-              <span class="badge badge-escalated">Escalated</span>
-            {% elif t.status == 'In Progress' %}
-              <span class="badge badge-progress">In Progress</span>
-            {% else %}
-              <span class="badge badge-open">Open</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if t.ai_resolution_status == 'AUTO_RESOLVE' %}
-              <span class="badge badge-resolved" title="Final Confidence: {{ (t.final_confidence * 100)|round(1) if t.final_confidence else 'N/A' }}%">
-                🤖 Auto-Resolved
-              </span>
-            {% elif t.ai_resolution_status == 'ESCALATE' %}
-              <span class="badge badge-escalated" title="Escalated to Human Support">
-                🚨 Escalated
-              </span>
-            {% else %}
-              <span class="badge badge-open">Pending AI</span>
-            {% endif %}
-          </td>
-          <td>
-            <div style="display: flex; gap: 0.4rem;">
-              <a href="{{ url_for('ticket_detail', ticket_id=t.ticket_id) }}" class="btn btn-outline btn-sm">
-                Details
+              <div style="font-size: 0.75rem; color: var(--text-muted);">
+                {{ t.passenger_name }}
+              </div>
+            </td>
+            <td>
+              <span class="badge badge-category">{{ t.category }}</span>
+            </td>
+            <td>
+              {% if t.priority == 'Critical' or t.priority == 'High' %}
+                <span class="badge badge-priority-high">{{ t.priority }}</span>
+              {% elif t.priority == 'Medium' %}
+                <span class="badge badge-category">{{ t.priority }}</span>
+              {% else %}
+                <span class="badge badge-category">{{ t.priority }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if t.status == 'Resolved' %}
+                <span class="badge badge-resolved">Resolved</span>
+              {% elif t.status == 'Escalated' %}
+                <span class="badge badge-escalated">Escalated</span>
+              {% elif t.status == 'In Progress' %}
+                <span class="badge badge-progress">In Progress</span>
+              {% else %}
+                <span class="badge badge-open">Open</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if t.ai_resolution_status == 'AUTO_RESOLVE' %}
+                <span class="badge badge-auto-resolve">✅ AUTO_RESOLVE</span>
+              {% elif t.ai_resolution_status == 'ESCALATE' %}
+                <span class="badge badge-escalated">🚨 ESCALATE</span>
+              {% else %}
+                <span class="badge badge-pending">⏳ PENDING</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if t.final_confidence %}
+                <span style="font-family: monospace; font-weight: 700; font-size: 0.85rem; color: {% if t.final_confidence >= 0.70 %}var(--emerald-text){% else %}var(--crimson-text){% endif %};">
+                  {{ (t.final_confidence * 100)|round(1) }}%
+                </span>
+              {% else %}
+                <span style="color: var(--text-dim); font-size: 0.8rem;">—</span>
+              {% endif %}
+            </td>
+            <td style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap;">
+              {{ t.created_at[:10] if t.created_at else 'Today' }}
+            </td>
+            <td style="text-align: right;">
+              <a href="{{ url_for('ticket_detail_view', ticket_id=t.ticket_id) }}" class="btn btn-secondary btn-sm" title="View Full Ticket Details">
+                View
               </a>
-              <a href="{{ url_for('multi_agent_studio_view', ticket_id=t.ticket_id) }}" class="btn btn-primary btn-sm">
-                ⚡ Multi-Agent
-              </a>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; font-size: 0.82rem; color: var(--text-muted);">
+      <div>Showing {{ tickets|length }} recent tickets (Filtered by: <strong>{{ resolution_status }}</strong>)</div>
+      <a href="{{ url_for('tickets_list') }}" style="color: var(--primary-blue); font-weight: 600;">
+        View All In Tickets Table ➔
+      </a>
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div style="text-align: center; padding: 3rem 1.5rem;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🎫</div>
+      <h3 style="font-size: 1.15rem; color: var(--text-main); margin-bottom: 0.35rem;">No Tickets Found</h3>
+      <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 400px; margin: 0 auto 1.25rem;">
+        No support requests match the current filter. Create a new support ticket to test automated resolution.
+      </p>
+      <a href="{{ url_for('create_ticket_view') }}" class="btn btn-primary btn-sm">
+        <span>➕</span> Create New Ticket
+      </a>
+    </div>
+    {% endif %}
   </div>
-  {% else %}
-  <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
-    <div style="font-size: 3rem; margin-bottom: 0.75rem;">✈️</div>
-    <h3>No Support Tickets Found</h3>
-    <p style="font-size: 0.9rem; margin-top: 0.3rem;">Click below to seed realistic airport domain test tickets or create a new passenger ticket.</p>
-    <div style="margin-top: 1.25rem; display: flex; justify-content: center; gap: 0.75rem;">
-      <form method="POST" action="{{ url_for('seed_samples') }}">
-        <button type="submit" class="btn btn-primary">🧪 Seed 8 Test Tickets</button>
+
+  <!-- Right: Compact Quick Actions Panel -->
+  <div class="card-panel" style="margin-bottom: 0;">
+    <div class="card-title" style="margin-bottom: 1.25rem;">
+      <span>⚡</span> Quick Actions
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+      <a href="{{ url_for('create_ticket_view') }}" class="btn btn-primary" style="justify-content: flex-start; padding: 0.75rem 1rem;">
+        <span>➕</span> Raise Support Ticket
+      </a>
+      <a href="{{ url_for('multi_agent_studio_view') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 0.75rem 1rem;">
+        <span>🤖</span> Multi-Agent Resolution Studio
+      </a>
+      <a href="{{ url_for('ai_solutions_view') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 0.75rem 1rem;">
+        <span>✅</span> View Auto-Resolved Solutions
+      </a>
+      <a href="{{ url_for('escalated_tickets_view') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 0.75rem 1rem;">
+        <span>🚨</span> View Escalation Queue
+      </a>
+      <a href="{{ url_for('knowledge_base_view') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 0.75rem 1rem;">
+        <span>📚</span> Browse Airport Knowledge Base
+      </a>
+    </div>
+
+    <!-- Seed Samples Test Button for Demo -->
+    <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle);">
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600;">
+        DEMO DATA ENGINE
+      </div>
+      <form action="{{ url_for('seed_samples') }}" method="POST">
+        <button type="submit" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center;" title="Generates 8 realistic aviation support test cases across all domains">
+          <span>✨</span> Seed 8 Test Tickets
+        </button>
       </form>
-      <a href="{{ url_for('create_ticket_view') }}" class="btn btn-outline">+ Raise Ticket</a>
     </div>
   </div>
-  {% endif %}
+
 </div>
 
-<!-- Airport Support Domain Clusters Quick Grid -->
-<div class="glass-panel">
-  <div class="panel-header">
-    <div class="panel-title">
-      <span>🌐</span> Supported Airport & Airways Domain Clusters
-    </div>
-    <a href="{{ url_for('knowledge_base_view') }}" class="btn-outline btn-sm">View Knowledge Base ➔</a>
-  </div>
+{% endblock %}
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
-    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">1. Flights</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">Schedules, delays, cancellations, rebooking & boarding updates.</div>
-    </div>
-    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">2. Check-in & Boarding</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">Web check-in, self-service kiosks, bag drops, security rules.</div>
-    </div>
-    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">3. Baggage</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">Lost/delayed baggage PIR, damaged luggage, cabin allowances.</div>
-    </div>
-    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">4. Airport Facilities</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">Executive lounges, short/long-term parking, terminal shuttles.</div>
-    </div>
-    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">5. Shopping & Services</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">Duty Free retail, food courts, restaurants, VAT tax refunds.</div>
-    </div>
-    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">6. Booking & Payment</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">E-tickets, payment failure reconciliation, refunds & vouchers.</div>
-    </div>
-    <div style="background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-      <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.25rem;">7. Passenger Assistance</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">Wheelchair mobility (WCHR/WCHC), senior escorts, lost & found.</div>
-    </div>
-  </div>
-</div>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
 
+  // Global Chart Default Styling
+  Chart.defaults.font.family = 'Inter, -apple-system, sans-serif';
+  Chart.defaults.color = '#64748B';
+
+  // =========================================================================
+  // 1. MAIN LINE CHART: AI Performance Over Time (Multi-Line)
+  // =========================================================================
+  const ctxMain = document.getElementById('chartPerformanceOverTime');
+  let mainChart = null;
+
+  const initialDates = {{ ai_time_series.dates|tojson }};
+  const initialAutoResolve = {{ ai_time_series.auto_resolve_rates|tojson }};
+  const initialEscalation = {{ ai_time_series.escalation_rates|tojson }};
+  const initialConfidence = {{ ai_time_series.average_confidences|tojson }};
+  const initialVolumes = {{ ai_time_series.ticket_volumes|tojson }};
+
+  if (ctxMain) {
+    mainChart = new Chart(ctxMain, {
+      type: 'line',
+      data: {
+        labels: initialDates.length > 0 ? initialDates : ['No Processed Data'],
+        datasets: [
+          {
+            label: 'AI Auto-Resolution Rate (%)',
+            data: initialAutoResolve.length > 0 ? initialAutoResolve : [0],
+            borderColor: '#10B981',
+            backgroundColor: 'rgba(16, 185, 129, 0.08)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#10B981'
+          },
+          {
+            label: 'AI Escalation Rate (%)',
+            data: initialEscalation.length > 0 ? initialEscalation : [0],
+            borderColor: '#EF4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.05)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#EF4444'
+          },
+          {
+            label: 'Average AI Confidence (%)',
+            data: initialConfidence.length > 0 ? initialConfidence : [0],
+            borderColor: '#2563EB',
+            backgroundColor: 'transparent',
+            borderWidth: 2.5,
+            borderDash: [5, 4],
+            fill: false,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#2563EB'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              boxWidth: 8,
+              font: { size: 12, weight: '600' },
+              padding: 16
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0F172A',
+            titleFont: { size: 13, weight: '700' },
+            bodyFont: { size: 12 },
+            padding: 12,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(context) {
+                return ` ${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 100,
+            ticks: {
+              callback: function(value) { return value + '%'; },
+              stepSize: 20,
+              font: { size: 11 }
+            },
+            grid: { color: '#F1F5F9' }
+          },
+          x: {
+            ticks: { font: { size: 11 } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+
+    // Time Range Filter Buttons Event Handling (AJAX Fetch)
+    document.querySelectorAll('.time-range-btn').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        document.querySelectorAll('.time-range-btn').forEach(b => {
+          b.classList.remove('active');
+          b.style.background = 'transparent';
+          b.style.color = 'var(--text-muted)';
+        });
+        this.classList.add('active');
+        this.style.background = 'var(--primary-blue)';
+        this.style.color = '#FFFFFF';
+
+        const range = this.getAttribute('data-range');
+        const overlay = document.getElementById('chartLoadingOverlay');
+        if (overlay) overlay.style.display = 'flex';
+
+        try {
+          const resp = await fetch(`/api/analytics/ai-performance?range=${range}`);
+          const resJson = await resp.json();
+
+          if (resJson.success && resJson.time_series) {
+            const ts = resJson.time_series;
+            const labels = ts.dates.length > 0 ? ts.dates : ['No Processed Data'];
+            const autoResolve = ts.auto_resolve_rates.length > 0 ? ts.auto_resolve_rates : [0];
+            const escalation = ts.escalation_rates.length > 0 ? ts.escalation_rates : [0];
+            const conf = ts.average_confidences.length > 0 ? ts.average_confidences : [0];
+
+            mainChart.data.labels = labels;
+            mainChart.data.datasets[0].data = autoResolve;
+            mainChart.data.datasets[1].data = escalation;
+            mainChart.data.datasets[2].data = conf;
+            mainChart.update();
+
+            // Also dynamically update KPI values if present
+            if (resJson.kpis) {
+              const k = resJson.kpis;
+              const elTot = document.getElementById('kpiTotalProcessed');
+              const elAuto = document.getElementById('kpiAutoResolveRate');
+              const elEsc = document.getElementById('kpiEscalationRate');
+              const elConf = document.getElementById('kpiAvgConfidence');
+              const elLowC = document.getElementById('kpiLowConfidence');
+              const elLowS = document.getElementById('kpiLowSimilarity');
+
+              if (elTot) elTot.innerText = k.total_processed;
+              if (elAuto) elAuto.innerText = `${k.auto_resolve_rate}%`;
+              if (elEsc) elEsc.innerText = `${k.escalation_rate}%`;
+              if (elConf) elConf.innerText = `${k.average_confidence}%`;
+              if (elLowC) elLowC.innerText = k.low_confidence_count;
+              if (elLowS) elLowS.innerText = k.low_similarity_count;
+            }
+          }
+        } catch (err) {
+          console.error('Failed to load filtered AI metrics:', err);
+        } finally {
+          if (overlay) overlay.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // =========================================================================
+  // 2. CHART A: Ticket Decision Distribution (Donut)
+  // =========================================================================
+  const ctxDecision = document.getElementById('chartDecisionDistribution');
+  if (ctxDecision) {
+    const autoResolved = {{ ai_kpis.auto_resolve_count|default(0) }};
+    const escalated = {{ ai_kpis.escalation_count|default(0) }};
+    const unprocessed = {{ ai_kpis.unprocessed_count|default(0) }};
+
+    new Chart(ctxDecision, {
+      type: 'doughnut',
+      data: {
+        labels: ['AI Auto-Resolved', 'Human Escalated', 'Unprocessed / Open'],
+        datasets: [{
+          data: [autoResolved, escalated, unprocessed],
+          backgroundColor: ['#10B981', '#EF4444', '#3B82F6'],
+          borderWidth: 2,
+          borderColor: '#FFFFFF',
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, font: { size: 11 }, padding: 12 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const total = autoResolved + escalated + unprocessed;
+                const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+              }
+            }
+          }
+        },
+        cutout: '65%'
+      }
+    });
+  }
+
+  // =========================================================================
+  // 3. CHART B: Category-wise AI Performance (Grouped Bar)
+  // =========================================================================
+  const ctxCat = document.getElementById('chartCategoryPerformance');
+  if (ctxCat) {
+    const catData = {{ category_ai|tojson }};
+    const catLabels = catData.map(c => c.category);
+    const catAuto = catData.map(c => c.auto_resolve_rate);
+    const catEsc = catData.map(c => c.escalation_rate);
+
+    new Chart(ctxCat, {
+      type: 'bar',
+      data: {
+        labels: catLabels,
+        datasets: [
+          {
+            label: 'Auto-Resolve (%)',
+            data: catAuto,
+            backgroundColor: 'rgba(16, 185, 129, 0.85)',
+            borderRadius: 4
+          },
+          {
+            label: 'Escalation (%)',
+            data: catEsc,
+            backgroundColor: 'rgba(239, 68, 68, 0.85)',
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { boxWidth: 10, font: { size: 11 }, padding: 10 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                return ` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)}%`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            min: 0,
+            max: 100,
+            ticks: { callback: v => v + '%', font: { size: 10 } },
+            grid: { color: '#F1F5F9' }
+          },
+          y: {
+            ticks: { font: { size: 10, weight: '500' } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  }
+
+  // =========================================================================
+  // 4. CHART C: AI Confidence Distribution Bands (Bar)
+  // =========================================================================
+  const ctxBands = document.getElementById('chartConfidenceDistribution');
+  if (ctxBands) {
+    const bandsData = {{ confidence_dist.bands|tojson }};
+    const bandLabels = bandsData.map(b => b.label);
+    const bandCounts = bandsData.map(b => b.count);
+    const bandColors = bandsData.map(b => b.color);
+
+    new Chart(ctxBands, {
+      type: 'bar',
+      data: {
+        labels: bandLabels,
+        datasets: [{
+          data: bandCounts,
+          backgroundColor: bandColors,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const total = {{ confidence_dist.total_processed|default(0) }};
+                const pct = total > 0 ? ((ctx.parsed.y / total) * 100).toFixed(1) : 0;
+                return ` Tickets: ${ctx.parsed.y} (${pct}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0, font: { size: 10 } },
+            grid: { color: '#F1F5F9' }
+          },
+          x: {
+            ticks: { font: { size: 10 } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  }
+
+  // =========================================================================
+  // 5. CHART D: Multi-Agent Stage Performance (Bar)
+  // =========================================================================
+  const ctxStages = document.getElementById('chartAgentPerformance');
+  if (ctxStages) {
+    const stageData = {{ agent_stages.stages|tojson }};
+    const stageLabels = stageData.map(s => s.stage);
+    const stageScores = stageData.map(s => s.score);
+
+    new Chart(ctxStages, {
+      type: 'bar',
+      data: {
+        labels: stageLabels,
+        datasets: [{
+          data: stageScores,
+          backgroundColor: [
+            'rgba(37, 99, 235, 0.85)',
+            'rgba(139, 92, 246, 0.85)',
+            'rgba(16, 185, 129, 0.85)',
+            'rgba(245, 158, 11, 0.85)'
+          ],
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const stg = stageData[ctx.dataIndex];
+                return ` ${stg.metric}: ${ctx.parsed.y.toFixed(1)}% (Weight: ${(stg.weight * 100).toFixed(0)}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 100,
+            ticks: { callback: v => v + '%', stepSize: 25, font: { size: 10 } },
+            grid: { color: '#F1F5F9' }
+          },
+          x: {
+            ticks: { font: { size: 10, weight: '600' } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  }
+
+});
+</script>
 {% endblock %}

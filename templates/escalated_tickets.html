@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}Escalated Tickets — AeroAssist AI{% endblock %}
+{% block page_title %}Escalated Support Queue{% endblock %}
+
+{% block content %}
+
+<!-- Header & Quick Actions -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main);">
+      Escalated Tickets
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+      Support requests where final AI confidence was below the 70% threshold, routed for human ground specialist review and Jira tracking.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('multi_agent_studio_view') }}" class="btn btn-secondary btn-sm">
+      <span>🤖</span> Multi-Agent Workflow
+    </a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-sm">
+      Dashboard
+    </a>
+  </div>
+</div>
+
+{% if selected_ticket %}
+<!-- SINGLE SELECTED ESCALATED TICKET DETAILS -->
+<div class="card-panel" style="border-left: 4px solid var(--crimson-danger); margin-bottom: 2rem;">
+  <div class="card-header">
+    <div class="card-title">
+      <span>🚨</span> Escalated Ticket: {{ selected_ticket.ticket_id }}
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+      <span class="badge badge-escalated">ESCALATE</span>
+      <span class="badge badge-critical">
+        Final Confidence: {{ ((selected_ticket.final_confidence or 0.45) * 100)|round(1) }}% (< 70%)
+      </span>
+    </div>
+  </div>
+
+  <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 0.75rem;">
+      <div>
+        <div class="kpi-label">Passenger</div>
+        <div style="font-weight: 700; color: var(--text-main);">{{ selected_ticket.passenger_name }}</div>
+      </div>
+      <div>
+        <div class="kpi-label">Category</div>
+        <div><span class="badge badge-category">{{ selected_ticket.category }}</span></div>
+      </div>
+      <div>
+        <div class="kpi-label">Priority & Severity</div>
+        <div style="display: flex; gap: 0.35rem; align-items: center;">
+          <span class="badge badge-critical">{{ selected_ticket.priority }}</span>
+          <span class="badge" style="background: #E2E8F0; color: #334155;">{{ selected_ticket.severity }}</span>
+        </div>
+      </div>
+      <div>
+        <div class="kpi-label">Human Support Status</div>
+        <div><span class="badge badge-progress">Under Ground Support Review</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="kpi-label">Passenger Issue</div>
+      <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem; margin-bottom: 0.25rem;">
+        {{ selected_ticket.title }}
+      </div>
+      <div style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
+        {{ selected_ticket.description }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Escalation Reason -->
+  <div style="background-color: var(--crimson-light); border: 1px solid var(--crimson-border); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+    <div class="kpi-label" style="color: var(--crimson-text);">Escalation Rationale</div>
+    <div style="color: var(--crimson-text); font-size: 0.9rem; line-height: 1.6; margin-top: 0.25rem;">
+      {{ selected_ticket.escalation_reason or 'Final AI confidence is below the configured 70% threshold. Requires specialized airline human assistance.' }}
+    </div>
+  </div>
+
+  <!-- External Integrations (Jira Cloud Tracking) -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+    
+    <!-- Jira Status Panel -->
+    <div id="jiraActionSection" style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">Jira Cloud Issue</span>
+        
+        <!-- Status Badge -->
+        {% if selected_ticket.jira_issue_key or (selected_ticket.jira_sync_status and selected_ticket.jira_sync_status|upper == 'CREATED') %}
+          <span class="badge badge-resolved">Status: CREATED</span>
+        {% elif selected_ticket.jira_sync_status and selected_ticket.jira_sync_status|upper == 'FAILED' %}
+          <span class="badge badge-critical">Status: FAILED</span>
+        {% elif not jira_is_configured or (selected_ticket.jira_sync_status and selected_ticket.jira_sync_status|upper in ['NOT CONFIGURED', 'NOT_CONFIGURED']) %}
+          <span class="badge badge-category">Status: NOT CONFIGURED</span>
+        {% else %}
+          <span class="badge badge-progress">Status: NOT CREATED</span>
+        {% endif %}
+      </div>
+
+      <!-- State Body -->
+      <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem; line-height: 1.5;">
+        {% if selected_ticket.jira_issue_key %}
+          <div style="margin-bottom: 0.5rem;">
+            Jira Key: <strong style="font-family: monospace; color: var(--primary-blue); font-size: 1rem;">{{ selected_ticket.jira_issue_key }}</strong>
+          </div>
+          {% if selected_ticket.jira_issue_url %}
+            <div style="margin-top: 0.5rem;">
+              <a href="{{ selected_ticket.jira_issue_url }}" target="_blank" class="btn btn-primary btn-sm" id="btnViewJiraTicket" style="font-size: 0.82rem; padding: 0.35rem 0.85rem; text-decoration: none;">
+                <span>🔗</span> View Jira Ticket ↗
+              </a>
+            </div>
+          {% endif %}
+        {% elif selected_ticket.jira_sync_status and selected_ticket.jira_sync_status|upper == 'FAILED' %}
+          <div style="color: #DC2626; margin-bottom: 0.75rem;">
+            <strong>Error:</strong> {{ selected_ticket.jira_last_error or 'Jira synchronization failed.' }}
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <form method="POST" action="{{ url_for('retry_jira_sync', ticket_id=selected_ticket.ticket_id) }}">
+              <button type="submit" class="btn btn-secondary btn-sm" id="btnRetryJiraSync">
+                <span>🔄</span> Retry Jira Sync
+              </button>
+            </form>
+          </div>
+        {% elif not jira_is_configured or (selected_ticket.jira_sync_status and selected_ticket.jira_sync_status|upper in ['NOT CONFIGURED', 'NOT_CONFIGURED']) %}
+          <div style="margin-bottom: 0.75rem; color: var(--text-muted);">
+            Jira credentials are not configured in the server environment.
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button type="button" onclick="openJiraConfigModal()" class="btn btn-outline btn-sm" id="btnConfigureJira">
+              <span>⚙️</span> Configure Jira
+            </button>
+            <form method="POST" action="{{ url_for('retry_jira_sync', ticket_id=selected_ticket.ticket_id) }}">
+              <button type="submit" class="btn btn-secondary btn-sm" id="btnRetryJiraSync">
+                <span>🔄</span> Retry Jira Sync
+              </button>
+            </form>
+          </div>
+        {% else %}
+          <div style="margin-bottom: 0.75rem; color: var(--text-muted);">
+            Ticket is escalated and ready for Jira issue tracking.
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <form method="POST" action="{{ url_for('create_jira_sync_route', ticket_id=selected_ticket.ticket_id) }}">
+              <button type="submit" class="btn btn-primary btn-sm" id="btnCreateJiraTicket">
+                <span>➕</span> Create Jira Ticket
+              </button>
+            </form>
+            <form method="POST" action="{{ url_for('retry_jira_sync', ticket_id=selected_ticket.ticket_id) }}">
+              <button type="submit" class="btn btn-secondary btn-sm" id="btnRetryJiraSync">
+                <span>🔄</span> Retry Jira Sync
+              </button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Email Notifications -->
+    <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <span style="font-weight: 700; color: var(--text-main);">Email Escalation</span>
+        <span class="badge badge-category">Not Configured</span>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+        Direct dispatch to duty manager email queue is enabled when SMTP credentials are present in server environment.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Panel Footer Actions -->
+  <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+    <a href="{{ url_for('escalated_tickets_view') }}" class="btn btn-outline btn-sm">
+      ← Back to Escalated Queue
+    </a>
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="{{ url_for('ticket_detail', ticket_id=selected_ticket.ticket_id) }}" class="btn btn-secondary btn-sm">
+        View Ticket Details
+      </a>
+      <a href="{{ url_for('multi_agent_studio_view', ticket_id=selected_ticket.ticket_id) }}" class="btn btn-primary btn-sm">
+        View Multi-Agent Workflow
+      </a>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Escalated Tickets Table Panel -->
+<div class="card-panel">
+  <div class="card-header">
+    <div class="card-title">
+      <span>🚨</span> Escalated Passenger Requests ({{ tickets|length }})
+    </div>
+  </div>
+
+  {% if tickets %}
+  <div class="table-responsive">
+    <table class="saas-table">
+      <thead>
+        <tr>
+          <th>Ticket ID</th>
+          <th>Passenger Issue</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Confidence</th>
+          <th>Escalation Reason</th>
+          <th>Jira Sync Status</th>
+          <th>Jira Key</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr>
+          <td>
+            <a href="{{ url_for('escalated_tickets_view', ticket_id=t.ticket_id) }}" style="font-family: monospace; font-weight: 700; color: var(--primary-blue);">
+              {{ t.ticket_id }}
+            </a>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: var(--text-main); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ t.title }}
+            </div>
+          </td>
+          <td>
+            <span class="badge badge-category">{{ t.category }}</span>
+          </td>
+          <td>
+            {% if t.priority == 'Critical' %}
+              <span class="badge badge-critical">Critical</span>
+            {% elif t.priority == 'High' %}
+              <span class="badge badge-progress">High</span>
+            {% else %}
+              <span class="badge badge-category">{{ t.priority }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <span style="font-family: monospace; font-weight: 700; color: #DC2626; font-size: 0.92rem;">
+              {% if t.final_confidence %}{{ (t.final_confidence * 100)|round(1) }}%{% else %}< 70%{% endif %}
+            </span>
+          </td>
+          <td>
+            <div style="font-size: 0.82rem; color: var(--text-muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ t.escalation_reason or 'Confidence below 70% threshold.' }}
+            </div>
+          </td>
+          <td>
+            {% if t.jira_issue_key or (t.jira_sync_status and t.jira_sync_status|upper == 'CREATED') %}
+              <span class="badge badge-resolved">CREATED</span>
+            {% elif t.jira_sync_status and t.jira_sync_status|upper == 'FAILED' %}
+              <span class="badge badge-critical">FAILED</span>
+            {% elif not jira_is_configured or (t.jira_sync_status and t.jira_sync_status|upper in ['NOT CONFIGURED', 'NOT_CONFIGURED']) %}
+              <span class="badge badge-category">NOT CONFIGURED</span>
+            {% else %}
+              <span class="badge badge-progress">NOT CREATED</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if t.jira_issue_key %}
+              <span style="font-family: monospace; font-weight: 700; color: var(--primary-blue); font-size: 0.88rem;">{{ t.jira_issue_key }}</span>
+            {% else %}
+              <span style="color: var(--text-dim); font-size: 0.82rem;">—</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div style="display: flex; gap: 0.35rem; justify-content: flex-end; align-items: center;">
+              {% if t.jira_issue_key and t.jira_issue_url %}
+                <a href="{{ t.jira_issue_url }}" target="_blank" class="btn btn-primary btn-sm" style="font-size: 0.78rem; padding: 0.25rem 0.55rem;" title="View Jira Ticket">
+                  View Jira ↗
+                </a>
+              {% elif t.jira_sync_status and t.jira_sync_status|upper == 'FAILED' %}
+                <form method="POST" action="{{ url_for('retry_jira_sync', ticket_id=t.ticket_id) }}" style="display: inline;">
+                  <button type="submit" class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 0.25rem 0.55rem;" title="Retry Jira Sync">
+                    Retry Jira Sync
+                  </button>
+                </form>
+              {% elif not jira_is_configured or (t.jira_sync_status and t.jira_sync_status|upper in ['NOT CONFIGURED', 'NOT_CONFIGURED']) %}
+                <button type="button" onclick="openJiraConfigModal()" class="btn btn-outline btn-sm" style="font-size: 0.78rem; padding: 0.25rem 0.55rem;" title="Configure Jira">
+                  Configure Jira
+                </button>
+              {% else %}
+                <form method="POST" action="{{ url_for('create_jira_sync_route', ticket_id=t.ticket_id) }}" style="display: inline;">
+                  <button type="submit" class="btn btn-primary btn-sm" style="font-size: 0.78rem; padding: 0.25rem 0.55rem;" title="Create Jira Ticket">
+                    Create Jira Ticket
+                  </button>
+                </form>
+              {% endif %}
+              <a href="{{ url_for('escalated_tickets_view', ticket_id=t.ticket_id) }}" class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 0.25rem 0.55rem;">
+                Details
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 3.5rem 1rem; color: var(--text-muted);">
+    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🛡️</div>
+    <h3 style="font-size: 1.2rem; color: var(--text-main); margin-bottom: 0.25rem;">No Escalated Tickets</h3>
+    <p style="font-size: 0.9rem; max-width: 460px; margin: 0 auto 1.5rem;">
+      There are currently no tickets in the human support queue. Tickets below the 70% confidence threshold will appear here once processed by the Escalation Agent.
+    </p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-sm">
+      Return to Dashboard
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Configure Jira Modal -->
+<div id="jiraConfigModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 1rem;">
+  <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); max-width: 540px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); padding: 1.75rem; position: relative;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+        <span>⚙️</span> Jira Cloud Configuration
+      </h3>
+      <button type="button" onclick="closeJiraConfigModal()" style="background: transparent; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer; padding: 0.25rem;">
+        ✕
+      </button>
+    </div>
+
+    <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+      To enable automated and manual Jira issue creation for escalated passenger tickets, configure the following variables in your server's <code style="color: var(--primary-blue); background: var(--bg-surface-subtle); padding: 0.15rem 0.4rem; border-radius: 4px;">.env</code> file:
+    </p>
+
+    <div style="background: #0F172A; border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem; font-family: monospace; font-size: 0.82rem; color: #38BDF8; overflow-x: auto; line-height: 1.7;">
+      <div><span style="color: #94A3B8;"># Jira Cloud REST API v3</span></div>
+      <div>JIRA_BASE_URL=https://your-domain.atlassian.net</div>
+      <div>JIRA_EMAIL=your-jira-email@example.com</div>
+      <div>JIRA_API_TOKEN=your-jira-api-token</div>
+      <div>JIRA_PROJECT_KEY=SUP</div>
+      <div>JIRA_ISSUE_TYPE=Task</div>
+    </div>
+
+    <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.5rem;">
+      <strong>Note:</strong> Generate an API token from your <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" style="color: var(--primary-blue);">Atlassian Security Settings</a>. After updating your <code style="font-family: monospace;">.env</code> file, restart the server or click <strong>Retry Jira Sync</strong>.
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+      <button type="button" onclick="closeJiraConfigModal()" class="btn btn-primary btn-sm">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openJiraConfigModal() {
+  const modal = document.getElementById('jiraConfigModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+function closeJiraConfigModal() {
+  const modal = document.getElementById('jiraConfigModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// Close modal when clicking outside box
+window.addEventListener('click', function(e) {
+  const modal = document.getElementById('jiraConfigModal');
+  if (modal && e.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+</script>
+
+{% endblock %}

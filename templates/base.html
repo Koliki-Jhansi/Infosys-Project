@@ -3,74 +3,195 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}AeroAssist AI{% endblock %} - Intelligent Airport & Airways Support</title>
+  <title>{% block title %}AeroAssist AI{% endblock %} — Airline & Airport Support Platform</title>
   
-  <!-- Google Fonts: Inter & Outfit -->
+  <!-- Modern Typography (Inter & Outfit) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Custom CSS -->
+  <!-- Design System CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/aeroassist.css') }}">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-  <!-- Navigation Bar -->
-  <nav class="navbar">
-    <a href="{{ url_for('dashboard') }}" class="brand">
-      <div class="brand-icon">✈️</div>
-      <div>
-        <span class="brand-title">AeroAssist AI</span>
-        <span class="brand-subtitle">Intelligent Airport & Airways Support</span>
-      </div>
-    </a>
-
-    {% if session.get('user_id') %}
-    <ul class="nav-links">
-      <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a></li>
-      <li><a href="{{ url_for('tickets_list') }}" class="{% if request.endpoint in ['tickets_list', 'ticket_detail'] %}active{% endif %}">Tickets</a></li>
-      <li><a href="{{ url_for('create_ticket_view') }}" class="{% if request.endpoint == 'create_ticket_view' %}active{% endif %}">+ Raise Ticket</a></li>
-      <li><a href="{{ url_for('knowledge_base_view') }}" class="{% if request.endpoint == 'knowledge_base_view' %}active{% endif %}">Knowledge Base</a></li>
+  {% if session.get('user_id') %}
+  <!-- Authenticated Application Architecture -->
+  <div class="app-container">
+    
+    <!-- Left Deep Navy Sidebar -->
+    <aside class="app-sidebar" id="appSidebar">
       
-      <li class="user-badge">
-        <span>👤 {{ session.get('full_name', 'Passenger') }}</span>
-        <span class="role-pill">{{ session.get('role', 'passenger') }}</span>
-      </li>
-      <li><a href="{{ url_for('logout') }}" class="btn-outline btn-sm">Sign Out</a></li>
-    </ul>
-    {% else %}
-    <ul class="nav-links">
-      <li><a href="{{ url_for('login') }}" class="btn-primary btn-sm">Sign In</a></li>
-    </ul>
-    {% endif %}
-  </nav>
+      <!-- Brand Header -->
+      <div class="sidebar-header">
+        <a href="{{ url_for('dashboard') }}" class="sidebar-brand">
+          <div class="sidebar-brand-icon">✈️</div>
+          <div>
+            <span class="sidebar-brand-text">AeroAssist AI</span>
+            <span class="sidebar-brand-sub">Operations Support</span>
+          </div>
+        </a>
+      </div>
 
-  <!-- Flash Messages -->
-  <div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="flash-container">
-          {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
-              <span>{% if category == 'success' %}✅{% elif category == 'danger' %}⚠️{% elif category == 'warning' %}🔔{% else %}ℹ️{% endif %}</span>
-              <span>{{ message }}</span>
+      <!-- Navigation Menu -->
+      <div class="sidebar-scroll">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <div class="sidebar-group-title">OVERVIEW</div>
+        <ul class="sidebar-nav">
+          <li>
+            <a href="{{ url_for('dashboard') }}" class="sidebar-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+              <span class="sidebar-icon">📊</span>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('create_ticket_view') }}" class="sidebar-link {% if request.endpoint == 'create_ticket_view' %}active{% endif %}" title="Create Ticket">
+              <span class="sidebar-icon">➕</span>
+              <span>New Ticket</span>
+              <span style="display:none;">Create Ticket</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('tickets_list') }}" class="sidebar-link {% if request.endpoint == 'tickets_list' and not request.args.get('resolution_status') %}active{% endif %}" title="My Tickets">
+              <span class="sidebar-icon">🎫</span>
+              <span>All Tickets</span>
+              <span style="display:none;">My Tickets</span>
+            </a>
+          </li>
+        </ul>
+
+        <!-- SECTION 2: AI SUPPORT CENTER -->
+        <div class="sidebar-group-title">AI SUPPORT CENTER</div>
+        <ul class="sidebar-nav">
+          <li>
+            <a href="{{ url_for('multi_agent_studio_view') }}" class="sidebar-link {% if request.endpoint in ['multi_agent_studio_view', 'multi_agent_ticket', 'multi_agent_resolve'] %}active{% endif %}">
+              <span class="sidebar-icon">🤖</span>
+              <span>Multi-Agent Workflow</span>
+            </a>
+
+            <!-- Slightly indented sub-items -->
+            <ul class="sidebar-sub-menu">
+              <li>
+                <a href="{{ url_for('ai_solutions_view') }}" class="sidebar-sub-link {% if request.endpoint in ['ai_solutions_view', 'm2_ai_resolution_view'] %}active{% endif %}">
+                  <span>✅</span>
+                  <span>AI Solutions</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('escalated_tickets_view') }}" class="sidebar-sub-link {% if request.endpoint in ['escalated_tickets_view', 'escalated_tickets'] %}active{% endif %}">
+                  <span>🚨</span>
+                  <span>Escalated Tickets</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <a href="{{ url_for('knowledge_base_view') }}" class="sidebar-link {% if request.endpoint in ['knowledge_base_view', 'knowledge_base'] %}active{% endif %}" title="Knowledge Library">
+              <span class="sidebar-icon">📚</span>
+              <span>Knowledge Base</span>
+              <span style="display:none;">Knowledge Library</span>
+            </a>
+          </li>
+        </ul>
+
+        <!-- SECTION 3: ACCOUNT -->
+        <div class="sidebar-group-title">ACCOUNT</div>
+        <ul class="sidebar-nav">
+          <li>
+            <a href="{{ url_for('profile') }}" class="sidebar-link {% if request.endpoint in ['profile', 'profile_view'] %}active{% endif %}">
+              <span class="sidebar-icon">👤</span>
+              <span>My Profile</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('logout') }}" class="sidebar-link" style="color: #F87171;" title="Sign Out">
+              <span class="sidebar-icon">🚪</span>
+              <span>Logout</span>
+              <span style="display:none;">Sign Out</span>
+            </a>
+          </li>
+        </ul>
+
+      </div>
+
+      <!-- Footer User Info -->
+      <div class="sidebar-footer">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div class="user-avatar">{{ session.get('full_name', 'P')[0] }}</div>
+          <div style="overflow: hidden;">
+            <div style="font-size: 0.82rem; font-weight: 600; color: #FFFFFF; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+              {{ session.get('full_name', 'Alex Morgan') }}
             </div>
-          {% endfor %}
+            <div style="font-size: 0.7rem; color: #94A3B8; text-transform: capitalize;">
+              {{ session.get('role', 'passenger') }}
+            </div>
+          </div>
         </div>
-      {% endif %}
-    {% endwith %}
+      </div>
 
-    <!-- Main Content Block -->
-    {% block content %}{% endblock %}
+    </aside>
+
+    <!-- Main Clean Workspace -->
+    <div class="app-main">
+      
+      <!-- Top Sticky Bar -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="topbar-mobile-toggle" id="mobileSidebarToggle" title="Toggle Navigation">
+            ☰
+          </button>
+          <div class="topbar-title-wrap">
+            <h2>{% block page_title %}{% endblock %}</h2>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <a href="{{ url_for('create_ticket_view') }}" class="btn btn-primary btn-sm">
+            <span>➕</span> New Ticket
+          </a>
+          <a href="{{ url_for('profile') }}" class="user-profile-badge">
+            <div class="user-avatar">{{ session.get('full_name', 'P')[0] }}</div>
+            <span>{{ session.get('full_name', 'Passenger') }}</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Page Content Slot -->
+      <main class="page-content">
+        
+        <!-- Flashed System Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-stack">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                  <span>{% if category == 'success' %}✅{% elif category == 'danger' %}⚠️{% elif category == 'warning' %}🔔{% else %}ℹ️{% endif %}</span>
+                  <span>{{ message }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </main>
+
+    </div>
+
   </div>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p><strong>AeroAssist AI</strong> &bull; Multi-Agent Airport & Airways Customer Support Platform with RAG Resolution & Quality Gate.</p>
-    <p style="margin-top: 0.25rem; font-size: 0.75rem;">Adaptation of Intelligent Multi-Agent Architecture for Aviation & Passenger Logistics.</p>
-  </footer>
+  {% else %}
+  <!-- Public Layout for Welcome & Login -->
+  <div style="min-height: 100vh; background-color: var(--bg-app);">
+    {% block public_content %}{% endblock %}
+  </div>
+  {% endif %}
 
+  <!-- Chart.js for Support Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Core Interactive Script -->
   <script src="{{ url_for('static', filename='js/aeroassist.js') }}"></script>
   {% block extra_js %}{% endblock %}
 </body>

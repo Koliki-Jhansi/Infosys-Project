@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}AeroAssist AI — Smarter Support for Every Journey{% endblock %}
+
+{% block public_content %}
+<div class="welcome-page-wrapper" style="background-color: #F8FAFC;">
+
+  <!-- 1. Top Navigation Bar -->
+  <header class="welcome-navbar">
+    <div style="display: flex; align-items: center; gap: 0.85rem;">
+      <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #0B1730, #2563EB); display: flex; align-items: center; justify-content: center; font-size: 1.35rem; color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);">
+        ✈️
+      </div>
+      <div>
+        <span style="font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">AeroAssist AI</span>
+        <span style="font-size: 0.7rem; color: #64748B; display: block; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Aviation Support Platform</span>
+      </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav>
+      <ul class="welcome-nav-links">
+        <li><a href="#hero" class="welcome-nav-link active">Home</a></li>
+        <li><a href="#about" class="welcome-nav-link">About</a></li>
+        <li><a href="#services" class="welcome-nav-link">Services</a></li>
+        <li><a href="{{ url_for('knowledge_base_view') }}" class="welcome-nav-link">Knowledge Base</a></li>
+        <li><a href="{{ url_for('contact') }}" class="welcome-nav-link">Contact</a></li>
+      </ul>
+    </nav>
+
+    <!-- Top-Right Action -->
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+          <span>📊</span> Dashboard
+        </a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary" style="padding: 0.65rem 1.4rem; font-size: 0.92rem; font-weight: 600;">
+          <span>👤</span> Passenger Login
+        </a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- 2. Full-Width Hero Section with Curved Separation -->
+  <section class="welcome-hero-section" id="hero">
+    <div class="welcome-hero-grid">
+      
+      <!-- Left Hero Column -->
+      <div class="welcome-hero-left">
+        
+        <!-- Brand & Subtitle -->
+        <div style="margin-bottom: 0.35rem;">
+          <span style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; color: #0F172A; text-transform: uppercase; letter-spacing: 0.5px;">
+            AeroAssist AI
+          </span>
+        </div>
+
+        <div class="hero-subtitle-badge">
+          TICKET RESOLUTION SYSTEM
+        </div>
+
+        <!-- Main Heading -->
+        <h1 style="font-size: 2.85rem; font-weight: 800; letter-spacing: -1px; color: var(--text-main); line-height: 1.15; margin-bottom: 1.25rem;">
+          Smarter Support for Every Journey
+        </h1>
+
+        <!-- Description -->
+        <p style="font-size: 1.08rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.85rem; max-width: 540px;">
+          Experience intelligent airport and airline customer support with AI-powered ticket management, knowledge-based solutions, and seamless human assistance.
+        </p>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem;">
+          {% if session.get('user_id') %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg" style="padding: 0.85rem 2rem; font-size: 1.05rem;">
+              <span>🚀</span> Get Started
+            </a>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg" style="padding: 0.85rem 2rem; font-size: 1.05rem;">
+              <span>🚀</span> Get Started
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg" style="padding: 0.85rem 1.85rem; font-size: 1.05rem;">
+              <span>👤</span> Passenger Login
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Three Feature Cards Below Buttons -->
+        <div class="welcome-three-cards">
+          
+          <!-- Card 1: Smart Ticket Management -->
+          <div class="mini-feature-card">
+            <div class="mini-feature-icon">
+              🎫
+            </div>
+            <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">
+              Smart Ticket Management
+            </h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+              Automatic category classification, priority indexing, and real-time tracking.
+            </p>
+          </div>
+
+          <!-- Card 2: AI-Powered Resolution -->
+          <div class="mini-feature-card">
+            <div class="mini-feature-icon" style="background-color: var(--emerald-light); color: var(--emerald-text);">
+              ⚡
+            </div>
+            <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">
+              AI-Powered Resolution
+            </h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+              Multi-agent diagnosis and grounded retrieval across 550+ verified airport procedures.
+            </p>
+          </div>
+
+          <!-- Card 3: Human Support Escalation -->
+          <div class="mini-feature-card">
+            <div class="mini-feature-icon" style="background-color: var(--amber-light); color: var(--amber-text);">
+              🛡️
+            </div>
+            <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">
+              Human Support Escalation
+            </h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+              70% quality validation gate ensuring complex inquiries route cleanly to ground staff.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Right Hero Column: Airplane at Terminal Sunset Image with Curved Separation -->
+      <div class="welcome-hero-right">
+        <div class="curved-image-container">
+          <img 
+            src="{{ url_for('static', filename='img/aviation_hero.jpg') }}" 
+            alt="Airplane at airport terminal at sunset" 
+            onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80';"
+          />
+          <!-- Subtle Floating Airport Badge -->
+          <div style="position: absolute; bottom: 2rem; right: 2rem; background: rgba(11, 23, 48, 0.88); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: var(--radius-md); padding: 0.85rem 1.25rem; color: #FFFFFF; box-shadow: var(--shadow-lg);">
+            <div style="font-size: 0.75rem; color: #38BDF8; font-weight: 700; text-transform: uppercase;">Operations Center</div>
+            <div style="font-size: 0.9rem; font-weight: 700;">Global Departure Terminal</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 3. Bottom Information Strip (4 Clean Blocks) -->
+  <section class="welcome-info-strip">
+    <div class="info-strip-grid">
+      
+      <!-- Block 1: Knowledge Base Articles -->
+      <div class="info-strip-item">
+        <div class="info-strip-icon">
+          📚
+        </div>
+        <div>
+          <div style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-display); color: #FFFFFF; line-height: 1.1;">
+            {{ kb_total_count|default(566) }} Articles
+          </div>
+          <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 0.15rem;">
+            Knowledge Base Articles
+          </div>
+        </div>
+      </div>
+
+      <!-- Block 2: AI-Powered Support -->
+      <div class="info-strip-item">
+        <div class="info-strip-icon" style="color: #34D399; background: rgba(16, 185, 129, 0.25); border-color: rgba(16, 185, 129, 0.4);">
+          🤖
+        </div>
+        <div>
+          <div style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-display); color: #FFFFFF; line-height: 1.1;">
+            5-Agent Pipeline
+          </div>
+          <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 0.15rem;">
+            AI-Powered Support
+          </div>
+        </div>
+      </div>
+
+      <!-- Block 3: Intelligent Resolutions -->
+      <div class="info-strip-item">
+        <div class="info-strip-icon" style="color: #A78BFA; background: rgba(139, 92, 246, 0.25); border-color: rgba(139, 92, 246, 0.4);">
+          ⚖️
+        </div>
+        <div>
+          <div style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-display); color: #FFFFFF; line-height: 1.1;">
+            70% Gate
+          </div>
+          <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 0.15rem;">
+            Intelligent Resolutions
+          </div>
+        </div>
+      </div>
+
+      <!-- Block 4: Better Travel Experience -->
+      <div class="info-strip-item">
+        <div class="info-strip-icon" style="color: #FBBF24; background: rgba(245, 158, 11, 0.25); border-color: rgba(245, 158, 11, 0.4);">
+          ✈️
+        </div>
+        <div>
+          <div style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-display); color: #FFFFFF; line-height: 1.1;">
+            Automated Care
+          </div>
+          <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 0.15rem;">
+            Better Travel Experience
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 4. Functional Detailed Sections for Nav Links (About, Services, Contact) -->
+  
+  <!-- About Section -->
+  <section id="about" style="max-width: 1200px; margin: 0 auto; padding: 5rem 2rem 3rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <div class="hero-subtitle-badge">ABOUT AEROASSIST AI</div>
+      <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem;">
+        Next-Generation Airport Operations & Passenger Care
+      </h2>
+      <p style="font-size: 1rem; color: var(--text-muted); max-width: 680px; margin: 0 auto; line-height: 1.6;">
+        AeroAssist AI combines semantic retrieval-augmented generation (RAG) with a five-agent diagnostic system to deliver instant, grounded support for airport transit, baggage handling, and flight disruption inquiries.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;">
+      <div class="feature-card">
+        <div class="mini-feature-icon">🎯</div>
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">Intelligent Classification</h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">Real-time TF-IDF vectorization and intent classification across 6 standard aviation support categories.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="mini-feature-icon" style="background-color: var(--emerald-light); color: var(--emerald-text);">📚</div>
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">Semantic Domain RAG</h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">Vectorized similarity indexing across {{ kb_total_count|default(566) }} validated airport procedural records.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="mini-feature-icon" style="background-color: var(--purple-light); color: var(--purple-text);">🤖</div>
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">5-Agent Orchestration</h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">Diagnosis, Retrieval, Resolution, Validation, and Escalation agents running in coordinated sequence.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="mini-feature-icon" style="background-color: var(--amber-light); color: var(--amber-text);">🛡️</div>
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">Human Escalation Guard</h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">Strict 70% confidence threshold routing complex inquiries directly to specialized ground specialists.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section id="services" style="background-color: #FFFFFF; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 5rem 2rem;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <div class="hero-subtitle-badge">OUR SERVICES</div>
+        <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem;">
+          Comprehensive Passenger Solutions
+        </h2>
+        <p style="font-size: 1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto;">
+          Streamlined support services for passengers and airline operations teams.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+        <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.75rem;">
+          <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">🧳</div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">Baggage & Property Tracking</h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">Immediate PIR filing guidance, baggage carousel location assistance, and compensation eligibility checks.</p>
+        </div>
+
+        <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.75rem;">
+          <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">⏱️</div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">Flight Disruption Support</h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">Weather delay guidance, missed connection rebooking procedures, and hotel voucher entitlement information.</p>
+        </div>
+
+        <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.75rem;">
+          <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">♿</div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">Special Passenger Assistance</h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">Pre-arranged wheelchair transit, unaccompanied minor protocols, and service animal documentation help.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" style="max-width: 1200px; margin: 0 auto; padding: 5rem 2rem;">
+    <div style="background: linear-gradient(135deg, #0B1730, #1E3A8A); border-radius: var(--radius-xl); padding: 3.5rem 3rem; color: #FFFFFF; text-align: center; box-shadow: var(--shadow-lg);">
+      <div style="font-size: 2rem; margin-bottom: 0.75rem;">✈️</div>
+      <h2 style="font-size: 2.25rem; font-weight: 800; color: #FFFFFF; margin-bottom: 0.75rem;">
+        Ready to Experience Smarter Airline Support?
+      </h2>
+      <p style="font-size: 1.05rem; color: #CBD5E1; max-width: 580px; margin: 0 auto 2rem; line-height: 1.6;">
+        Sign in to your passenger portal to create support tickets, monitor AI resolutions, or access the comprehensive knowledge base.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        {% if session.get('user_id') %}
+          <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg" style="background-color: #2563EB; border-color: #2563EB; padding: 0.85rem 2.25rem;">
+            Go to Passenger Dashboard ➔
+          </a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg" style="background-color: #2563EB; border-color: #2563EB; padding: 0.85rem 2.25rem;">
+            Passenger Sign In ➔
+          </a>
+          <a href="{{ url_for('knowledge_base_view') }}" class="btn btn-secondary btn-lg" style="background: rgba(255, 255, 255, 0.12); color: #fff; border-color: rgba(255, 255, 255, 0.25);">
+            Browse Knowledge Base
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="text-align: center; padding: 2.5rem 2rem; color: var(--text-dim); font-size: 0.85rem; border-top: 1px solid var(--border-color); background-color: #FFFFFF;">
+    <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 0.35rem;">
+      AeroAssist AI &bull; Intelligent Airport & Airways Customer Support Platform
+    </div>
+    <div>
+      &copy; 2026 AeroAssist AI Platform. All rights reserved.
+    </div>
+  </footer>
+
+</div>
+{% endblock %}

@@ -1,174 +1,120 @@
 {% extends "base.html" %}
 
-{% block title %}AI Knowledge Resolution - {{ ticket.ticket_id }} - AeroAssist AI{% endblock %}
+{% block title %}AI Knowledge Resolution - AeroAssist AI{% endblock %}
 
 {% block content %}
-
-<!-- Header -->
-<div style="margin-bottom: 1.75rem;">
-  <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
-    <div>
-      <a href="{{ url_for('ticket_detail', ticket_id=ticket.ticket_id) }}" style="color: var(--accent-cyan); text-decoration: none; font-size: 0.85rem; font-weight: 600;">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <a href="{{ url_for('ticket_detail', ticket_id=ticket.ticket_id) }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">
         ← Back to Ticket {{ ticket.ticket_id }}
       </a>
-      <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.25rem;">
-        <span class="badge" style="background: rgba(14, 165, 233, 0.2); color: #38BDF8; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.4);">
-          MILESTONE 2
-        </span>
-        <h1 style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 800; color: #fff;">
-          AI Knowledge Resolution
-        </h1>
+    </div>
+    <h1 style="font-family: var(--font-display); font-size: 2rem; font-weight: 800; color: #fff;">
+      AI Knowledge Resolution
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+      Pre-Execution RAG Vector Retrieval & Grounded Guidance for Ticket {{ ticket.ticket_id }}
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('multi_agent_studio_view', ticket_id=ticket.ticket_id) }}" class="btn btn-primary">
+      <span>🤖</span> Continue to Multi-Agent Workflow ➔
+    </a>
+  </div>
+</div>
+
+<!-- Architecture Banner -->
+<div class="glass-panel" style="padding: 1.25rem; background: rgba(8, 15, 33, 0.85); border-color: rgba(56, 189, 248, 0.25); margin-bottom: 1.5rem;">
+  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-cyan); font-weight: 700; margin-bottom: 0.6rem;">
+    RAG Architecture Flow
+  </div>
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem; color: #fff;">
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 0.5rem 0.85rem; border-radius: 8px;">Passenger Query</div>
+    <span style="color: var(--accent-cyan);">➔</span>
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 0.5rem 0.85rem; border-radius: 8px;">TF-IDF Matrix</div>
+    <span style="color: var(--accent-cyan);">➔</span>
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 0.5rem 0.85rem; border-radius: 8px;">Cosine Similarity</div>
+    <span style="color: var(--accent-cyan);">➔</span>
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 0.5rem 0.85rem; border-radius: 8px;">Ranked 560+ Articles</div>
+    <span style="color: var(--accent-cyan);">➔</span>
+    <div style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; padding: 0.5rem 0.85rem; border-radius: 8px; color: #6EE7B7; font-weight: 600;">Grounded Resolution</div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+  <!-- Left Column -->
+  <div>
+    <div class="glass-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>🎫</span> Ticket Analysis
+        </div>
+        <span class="badge badge-category">{{ ticket.category }}</span>
       </div>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">
-        Milestone 2 • Airport & Airways RAG (TF-IDF Vectorization & Cosine Similarity)
-      </p>
+      <div style="margin-bottom: 0.75rem;">
+        <span class="stat-label">Title</span>
+        <div style="font-weight: 600; color: #fff;">{{ ticket.title }}</div>
+      </div>
+      <div>
+        <span class="stat-label">Description</span>
+        <div style="background: rgba(6, 11, 25, 0.8); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.85rem; font-size: 0.88rem; color: #CBD5E1; line-height: 1.6;">
+          {{ ticket.description }}
+        </div>
+      </div>
     </div>
 
-    <div>
-      <a href="{{ url_for('multi_agent_studio_view', ticket_id=ticket.ticket_id) }}" class="btn btn-primary" style="padding: 0.75rem 1.5rem; font-size: 0.92rem;">
-        Continue to Multi-Agent Workflow ➔
-      </a>
+    <div class="glass-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>📚</span> Knowledge Context
+        </div>
+      </div>
+      <div style="background: rgba(6, 11, 25, 0.85); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.82rem; color: #94A3B8; max-height: 250px; overflow-y: auto; white-space: pre-line; line-height: 1.6;">
+        {{ rag_result.context }}
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Architecture Pipeline Concept Banner (Milestone 2 RAG) -->
-<div class="glass-panel" style="padding: 1.25rem; background: linear-gradient(135deg, rgba(15, 26, 54, 0.9), rgba(11, 20, 44, 0.9)); margin-bottom: 1.5rem;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-cyan); font-weight: 700;">
-      Milestone 2 RAG Architecture Flow
-    </span>
-    <span class="badge badge-open">TF-IDF + Cosine Similarity</span>
-  </div>
+  <!-- Right Column -->
+  <div>
+    <div class="glass-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>🎯</span> Pre-Execution RAG Vector Retrieval
+        </div>
+        {% if rag_result.knowledge_found %}
+          <span class="badge badge-auto-resolve">Similarity: {{ (rag_result.similarity_score * 100)|round(1) }}%</span>
+        {% else %}
+          <span class="badge badge-pending">Similarity: {{ (rag_result.similarity_score * 100)|round(1) }}%</span>
+        {% endif %}
+      </div>
 
-  <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; overflow-x: auto; padding: 0.5rem 0; font-size: 0.85rem;">
-    <div style="background: rgba(11, 20, 44, 0.8); border: 1px solid var(--border-color); padding: 0.6rem 1rem; border-radius: 8px; text-align: center;">
-      <div style="color: #fff; font-weight: 700;">1. Customer Query</div>
-      <div style="font-size: 0.7rem; color: var(--text-dim);">Ticket Title + Details</div>
-    </div>
-    <div style="color: var(--primary-cyan);">➔</div>
-    <div style="background: rgba(11, 20, 44, 0.8); border: 1px solid var(--border-color); padding: 0.6rem 1rem; border-radius: 8px; text-align: center;">
-      <div style="color: #fff; font-weight: 700;">2. TF-IDF Vectorizer</div>
-      <div style="font-size: 0.7rem; color: var(--text-dim);">Unigram + Bigram</div>
-    </div>
-    <div style="color: var(--primary-cyan);">➔</div>
-    <div style="background: rgba(11, 20, 44, 0.8); border: 1px solid var(--border-color); padding: 0.6rem 1rem; border-radius: 8px; text-align: center;">
-      <div style="color: #fff; font-weight: 700;">3. Cosine Retriever</div>
-      <div style="font-size: 0.7rem; color: var(--text-dim);">25 KB Articles (7 Clusters)</div>
-    </div>
-    <div style="color: var(--primary-cyan);">➔</div>
-    <div style="background: rgba(11, 20, 44, 0.8); border: 1px solid var(--border-color); padding: 0.6rem 1rem; border-radius: 8px; text-align: center;">
-      <div style="color: #fff; font-weight: 700;">4. Context Builder</div>
-      <div style="font-size: 0.7rem; color: var(--text-dim);">Grounded Knowledge</div>
-    </div>
-    <div style="color: var(--primary-cyan);">➔</div>
-    <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); padding: 0.6rem 1rem; border-radius: 8px; text-align: center;">
-      <div style="color: #6EE7B7; font-weight: 700;">5. Grounded Resolution</div>
-      <div style="font-size: 0.7rem; color: var(--text-dim);">Domain Procedural Steps</div>
-    </div>
-  </div>
-</div>
-
-<!-- Ticket Information Card -->
-<div class="glass-panel" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-  <div class="panel-header">
-    <div class="panel-title" style="font-size: 1.1rem;">
-      <span>🎫</span> Ticket Information
-    </div>
-    <span class="badge badge-open">{{ ticket.ticket_id }}</span>
-  </div>
-
-  <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 0.5rem;">
-    {{ ticket.title }}
-  </h3>
-  <div style="background: rgba(11, 20, 44, 0.7); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; font-size: 0.9rem; color: #E2E8F0; line-height: 1.6; white-space: pre-wrap;">{{ ticket.description }}</div>
-
-  <div style="display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; font-size: 0.85rem;">
-    <div><strong>Category:</strong> <span style="color: var(--accent-cyan);">{{ ticket.category }}</span></div>
-    <div><strong>Priority:</strong> <span>{{ ticket.priority }}</span></div>
-    <div><strong>Flight:</strong> <span style="font-family: monospace; color: #7DD3FC;">{{ ticket.flight_number or 'N/A' }}</span></div>
-    <div><strong>Booking PNR:</strong> <span style="font-family: monospace; color: #7DD3FC;">{{ ticket.booking_ref or 'N/A' }}</span></div>
-  </div>
-</div>
-
-<!-- RAG Vector Retrieval Details Card -->
-<div class="glass-panel" style="padding: 1.5rem; margin-bottom: 1.5rem; border-left: 4px solid var(--primary-cyan);">
-  <div class="panel-header">
-    <div class="panel-title" style="font-size: 1.1rem;">
-      <span>🔍</span> Pre-Execution RAG Vector Retrieval (TF-IDF + Cosine)
-    </div>
-    <div>
-      {% if rag_result.knowledge_found %}
-        <span class="badge badge-resolved" style="font-size: 0.85rem;">✅ Knowledge Found</span>
-      {% else %}
-        <span class="badge badge-escalated" style="font-size: 0.85rem;">⚠️ No Relevant Knowledge Found</span>
+      {% if rag_result.top_article %}
+      <div style="background: rgba(8, 15, 33, 0.7); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="font-family: monospace; color: var(--accent-cyan); font-weight: 700; font-size: 0.85rem;">
+            {{ rag_result.top_article.id }} &bull; {{ rag_result.top_article.cluster }}
+          </span>
+          <span class="badge badge-category">{{ rag_result.top_article.category }}</span>
+        </div>
+        <h3 style="color: #fff; font-family: var(--font-display); font-size: 1.15rem; margin-bottom: 0.5rem;">
+          {{ rag_result.top_article.title }}
+        </h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.65;">
+          {{ rag_result.top_article.content }}
+        </p>
+      </div>
       {% endif %}
-    </div>
-  </div>
 
-  {% if rag_result.top_article %}
-  <div style="background: rgba(11, 20, 44, 0.8); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <span class="badge badge-open" style="font-family: monospace; font-size: 0.85rem; font-weight: 700;">{{ rag_result.top_article.id }}</span>
-        <span style="font-size: 1.05rem; font-weight: 700; color: #fff;">{{ rag_result.top_article.title }}</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #A5B4FC;">{{ rag_result.top_article.cluster }}</span>
-        <span class="badge badge-resolved" style="font-weight: 700; font-size: 0.85rem;">
-          Similarity: {{ (rag_result.similarity_score * 100)|round(1) }}%
-        </span>
+      <div>
+        <span class="stat-label">Generated Knowledge-Grounded Resolution</span>
+        <div style="background: rgba(6, 11, 25, 0.9); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.25rem; color: #F1F5F9; font-size: 0.92rem; line-height: 1.7; white-space: pre-line; margin-top: 0.4rem;">
+          {{ rag_result.resolution_text }}
+        </div>
       </div>
     </div>
-
-    <div style="font-size: 0.88rem; color: #CBD5E1; line-height: 1.65; margin-top: 0.5rem;">
-      {{ rag_result.top_article.content }}
-    </div>
-  </div>
-
-  <!-- Relevance Score Breakdown Bar -->
-  <div style="margin-bottom: 1rem;">
-    <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.3rem;">
-      <span style="color: var(--text-muted);">Cosine Similarity Score vs. Relevance Threshold (20.0%)</span>
-      <span style="font-weight: 700; color: #fff;">{{ (rag_result.similarity_score * 100)|round(1) }}%</span>
-    </div>
-    <div style="background: rgba(255, 255, 255, 0.1); height: 8px; border-radius: 4px; overflow: hidden;">
-      <div style="background: linear-gradient(90deg, #0284C7, #00F0FF); width: {{ (rag_result.similarity_score * 100)|round(0) }}%; height: 100%;"></div>
-    </div>
-  </div>
-  {% else %}
-  <div style="color: #F87171; font-size: 0.9rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
-    No airport support procedures in the knowledge base satisfied the relevance threshold for this query.
-  </div>
-  {% endif %}
-</div>
-
-<!-- Grounded AI Resolution Card -->
-<div class="glass-panel" style="padding: 1.5rem; margin-bottom: 1.5rem; border-left: 4px solid var(--status-resolved);">
-  <div class="panel-header">
-    <div class="panel-title" style="font-size: 1.1rem;">
-      <span>📝</span> Generated Knowledge-Grounded Resolution
-    </div>
-    <span class="badge badge-open">Grounded Procedural Response</span>
-  </div>
-
-  <div style="background: rgba(11, 20, 44, 0.7); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.25rem; font-size: 0.92rem; line-height: 1.7; color: #E2E8F0; white-space: pre-wrap;">{{ rag_result.resolution_text }}</div>
-
-  <div style="margin-top: 1rem; font-size: 0.78rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.4rem;">
-    <span>🔒</span>
-    <span>AeroAssist RAG Guarantee: Response is strictly grounded in official support articles and does not hallucinate live flight status or gate decisions.</span>
   </div>
 </div>
-
-<!-- Bottom Navigation Actions -->
-<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-  <a href="{{ url_for('ticket_detail', ticket_id=ticket.ticket_id) }}" class="btn btn-outline">
-    ← Back to Ticket {{ ticket.ticket_id }}
-  </a>
-
-  <a href="{{ url_for('multi_agent_studio_view', ticket_id=ticket.ticket_id) }}" class="btn btn-primary" style="padding: 0.75rem 1.75rem;">
-    Continue to Multi-Agent Workflow ➔
-  </a>
-</div>
-
 {% endblock %}

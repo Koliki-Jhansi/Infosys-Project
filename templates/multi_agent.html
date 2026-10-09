@@ -1,334 +1,376 @@
 {% extends "base.html" %}
 
-{% block title %}Multi-Agent Resolution - {{ ticket.ticket_id }} - AeroAssist AI{% endblock %}
+{% block title %}Multi-Agent Workflow - AeroAssist AI{% endblock %}
+{% block page_title %}Multi-Agent Resolution Workflow{% endblock %}
 
 {% block content %}
 
-<!-- Header -->
-<div style="margin-bottom: 1.75rem;">
-  <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
-    <div>
-      <a href="{{ url_for('ticket_detail', ticket_id=ticket.ticket_id) }}" style="color: var(--accent-cyan); text-decoration: none; font-size: 0.85rem; font-weight: 600;">
-        ← Back to Ticket {{ ticket.ticket_id }}
-      </a>
-      <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.25rem;">
-        <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #A5B4FC; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(99, 102, 241, 0.4);">
-          MILESTONE 3
-        </span>
-        <h1 style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 800; color: #fff;">
-          Multi-Agent Ticket Resolution Studio
-        </h1>
-      </div>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">
-        Milestone 3 • Five-Agent Sequential Aviation Pipeline (Diagnosis → Retrieval → Resolution → Validation Gate → Escalation)
-      </p>
-    </div>
-
-    <div>
-      <button type="button" id="btn-run-multi-agent" data-ticket-id="{{ ticket.ticket_id }}" class="btn btn-primary" style="padding: 0.75rem 1.75rem; font-size: 0.95rem;">
-        ⚡ Run Multi-Agent Resolution
-      </button>
-    </div>
+<!-- Header & Run Trigger -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main);">
+      Multi-Agent Ticket Resolution
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+      Understand, retrieve, resolve, validate and decide.
+    </p>
   </div>
+
+  {% if ticket %}
+  <div>
+    <button id="runAgentsBtn" data-ticket-id="{{ ticket.ticket_id }}" class="btn btn-primary btn-lg">
+      <span>⚡</span> Run AI Resolution
+    </button>
+  </div>
+  {% endif %}
 </div>
 
-<!-- "From Ticket to Outcome" 5-Agent Sequential Stepper -->
-<div class="glass-panel" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(15, 26, 54, 0.95), rgba(7, 13, 30, 0.95)); border: 1px solid var(--border-glow); margin-bottom: 1.5rem;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-cyan); font-weight: 700;">
-      Milestone 3 Sequential 5-Agent Pipeline
-    </span>
-    <span style="font-size: 0.75rem; color: var(--text-dim);">Decision Gate: <strong>70.0%</strong></span>
-  </div>
-
-  <div class="workflow-stepper">
-    <div id="wf-step-1" class="step-node {% if latest_run %}completed{% else %}active{% endif %}">
-      <div class="step-circle">🎯</div>
-      <div class="step-title">1. Diagnosis Agent</div>
-      <div class="step-sub">Intent & Context</div>
+<!-- Ticket Selector Bar & Loaded Ticket Context -->
+<div class="card-panel">
+  <form method="GET" action="{{ url_for('multi_agent_studio_view') }}" style="margin-bottom: 1.25rem;">
+    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+      <label class="form-label" style="margin-bottom: 0; white-space: nowrap; font-weight: 700;">Select Ticket to Process:</label>
+      <select name="ticket_id" class="form-control form-select" style="flex: 1; min-width: 260px;" onchange="this.form.submit()">
+        {% for t in tickets %}
+        <option value="{{ t.ticket_id }}" {% if ticket and ticket.ticket_id == t.ticket_id %}selected{% endif %}>
+          {{ t.ticket_id }} &bull; {{ t.title }} ({{ t.category }})
+        </option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-secondary btn-sm">Load</button>
     </div>
+  </form>
 
-    <div class="step-arrow">➔</div>
-
-    <div id="wf-step-2" class="step-node {% if latest_run %}completed{% else %}active{% endif %}">
-      <div class="step-circle">🔍</div>
-      <div class="step-title">2. Retrieval Agent</div>
-      <div class="step-sub">Reuses M2 RAG</div>
-    </div>
-
-    <div class="step-arrow">➔</div>
-
-    <div id="wf-step-3" class="step-node {% if latest_run %}completed{% else %}active{% endif %}">
-      <div class="step-circle">📝</div>
-      <div class="step-title">3. Resolution Agent</div>
-      <div class="step-sub">Grounded Guidance</div>
-    </div>
-
-    <div class="step-arrow">➔</div>
-
-    <div id="wf-step-4" class="step-node {% if latest_run %}completed{% else %}active{% endif %}">
-      <div class="step-circle">⚖️</div>
-      <div class="step-title">4. Validation Gate</div>
-      <div class="step-sub">40/40/20 Quality Formula</div>
-    </div>
-
-    <div class="step-arrow">➔</div>
-
-    <div id="wf-step-5" class="step-node {% if latest_run %}completed{% else %}active{% endif %}">
-      <div class="step-circle">🏁</div>
-      <div class="step-title">5. Escalation Agent</div>
-      <div class="step-sub">AUTO_RESOLVE / Human</div>
-    </div>
-  </div>
-</div>
-
-<!-- Ticket Overview Banner -->
-<div class="glass-panel" style="padding: 1.25rem; margin-bottom: 1.5rem;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
-    <div style="font-weight: 700; color: #fff; font-size: 1.05rem;">
-      {{ ticket.title }}
-    </div>
-    <div>
-      <span class="badge badge-open">🏷️ {{ ticket.category }}</span>
-      <span class="badge badge-prio-med">⚡ {{ ticket.priority }}</span>
-      {% if ticket.flight_number %}
-        <span class="badge" style="background: rgba(14, 165, 233, 0.2); color: #7DD3FC;">✈️ {{ ticket.flight_number }}</span>
-      {% endif %}
-    </div>
-  </div>
-  <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">{{ ticket.description }}</p>
-</div>
-
-<!-- Multi-Agent Results View -->
-<div id="multi-agent-results-view">
-  
-  {% if latest_run %}
-    
-    <!-- Final Outcome Banner -->
-    <div class="glass-panel" style="border: 2px solid {% if latest_run.outcome == 'AUTO_RESOLVE' %}var(--status-resolved){% else %}var(--status-escalated){% endif %}; background: rgba(15, 26, 54, 0.9); margin-bottom: 1.5rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <div style="width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.85rem; background: {% if latest_run.outcome == 'AUTO_RESOLVE' %}rgba(16, 185, 129, 0.2){% else %}rgba(239, 68, 68, 0.2){% endif %};">
-            {% if latest_run.outcome == 'AUTO_RESOLVE' %}🤖{% else %}🚨{% endif %}
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: {% if latest_run.outcome == 'AUTO_RESOLVE' %}#34D399{% else %}#F87171{% endif %}; font-weight: 700;">
-              Workflow Decision Outcome
-            </span>
-            <h2 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: #fff;">
-              {% if latest_run.outcome == 'AUTO_RESOLVE' %}AUTO_RESOLVE (Passenger Resolution Ready){% else %}ESCALATE (Human Support Required){% endif %}
-            </h2>
-          </div>
-        </div>
-
-        <div class="gauge-wrapper">
-          <div class="gauge-circle {% if latest_run.final_confidence >= latest_run.threshold %}pass{% else %}fail{% endif %}">
-            <span>{{ (latest_run.final_confidence * 100)|round(1) }}%</span>
-            <span style="font-size: 0.6rem; color: var(--text-muted); font-weight: normal;">FINAL</span>
-          </div>
-          <div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">Decision Threshold: <strong>70.0%</strong></div>
-            <div style="font-size: 0.8rem; color: {% if latest_run.final_confidence >= latest_run.threshold %}#34D399{% else %}#F87171{% endif %}; font-weight: 600;">
-              {% if latest_run.final_confidence >= latest_run.threshold %}
-                Confidence &ge; 70% &bull; Auto-Resolved
-              {% else %}
-                Confidence &lt; 70% &bull; Escalated
-              {% endif %}
-            </div>
-          </div>
+  {% if ticket %}
+  <!-- Loaded Ticket Context Details -->
+  <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 0.75rem;">
+      <div>
+        <div class="kpi-label">Ticket ID</div>
+        <div style="font-family: monospace; font-weight: 700; color: var(--primary-blue); font-size: 1rem;">
+          {{ ticket.ticket_id }}
         </div>
       </div>
-    </div>
-
-    <!-- The 5 Sequential Agent Trace Breakdown -->
-    <div style="display: flex; flex-direction: column; gap: 1rem;">
-      
-      <!-- AGENT 1: DIAGNOSIS AGENT -->
-      <div class="agent-card agent-1">
-        <div class="agent-header">
-          <div class="agent-title">
-            <span>🎯</span> Agent 1: Diagnosis Agent
-          </div>
-          <span class="badge badge-open">Confidence: {{ (latest_run.diagnosis_confidence * 100)|round(1) }}%</span>
-        </div>
-        <div style="font-size: 0.88rem; color: #E2E8F0;">
-          <div><strong>Identified Category:</strong> <span style="color: var(--accent-cyan);">{{ latest_run.diagnosis_category }}</span></div>
-          <div style="margin-top: 0.3rem;"><strong>Extracted Intent:</strong> {{ latest_run.diagnosis_intent }}</div>
-        </div>
+      <div>
+        <div class="kpi-label">Category</div>
+        <div><span class="badge badge-category">{{ ticket.category }}</span></div>
       </div>
-
-      <!-- AGENT 2: RETRIEVAL AGENT (Reuses Milestone 2 RAG) -->
-      <div class="agent-card agent-2">
-        <div class="agent-header">
-          <div class="agent-title">
-            <span>🔍</span> Agent 2: Retrieval Agent <span style="font-size: 0.72rem; color: #A5B4FC; font-weight: normal; margin-left: 0.5rem;">(Reuses Milestone 2 RAG Retriever)</span>
-          </div>
-          <div>
-            {% if latest_run.retrieval_found %}
-              <span class="badge badge-resolved">Knowledge Found ({{ (latest_run.retrieval_similarity * 100)|round(1) }}%)</span>
-            {% else %}
-              <span class="badge badge-escalated">No Relevant Knowledge Found</span>
-            {% endif %}
-          </div>
-        </div>
-        <div style="font-size: 0.88rem; color: #E2E8F0;">
-          {% if latest_run.retrieval_kb_id %}
-            <div><strong>Top Matched Article:</strong> <span class="badge badge-open">{{ latest_run.retrieval_kb_id }}</span></div>
-            <div style="margin-top: 0.3rem;"><strong>Similarity Score:</strong> {{ (latest_run.retrieval_similarity * 100)|round(1) }}% (Threshold = 20.0%)</div>
+      <div>
+        <div class="kpi-label">Current Persisted Status</div>
+        <div>
+          {% if ticket.ai_resolution_status == 'AUTO_RESOLVE' %}
+            <span class="badge badge-auto-resolve">✅ AUTO_RESOLVE</span>
+          {% elif ticket.ai_resolution_status == 'ESCALATE' %}
+            <span class="badge badge-escalated">🚨 ESCALATE</span>
           {% else %}
-            <div style="color: #F87171;">No airport knowledge article met the cosine similarity relevance threshold.</div>
+            <span class="badge badge-pending">⏳ PENDING RUN</span>
           {% endif %}
         </div>
       </div>
-
-      <!-- AGENT 3: RESOLUTION AGENT -->
-      <div class="agent-card agent-3">
-        <div class="agent-header">
-          <div class="agent-title">
-            <span>📝</span> Agent 3: Resolution Agent
-          </div>
-          <span class="badge badge-open">Completeness: {{ (latest_run.resolution_completeness * 100)|round(1) }}%</span>
-        </div>
-        <div style="background: rgba(11, 20, 44, 0.7); padding: 1rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.6; color: #E2E8F0; white-space: pre-wrap;">{{ ticket.resolution_text }}</div>
-      </div>
-
-      <!-- AGENT 4: VALIDATION AGENT (Quality Gate) -->
-      <div class="agent-card agent-4">
-        <div class="agent-header">
-          <div class="agent-title">
-            <span>⚖️</span> Agent 4: Validation Agent (Quality Gate)
-          </div>
-          <span class="badge {% if latest_run.final_confidence >= latest_run.threshold %}badge-resolved{% else %}badge-escalated{% endif %}">
-            Final Score: {{ (latest_run.final_confidence * 100)|round(1) }}%
-          </span>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; background: rgba(11, 20, 44, 0.6); padding: 1rem; border-radius: 8px;">
-          <div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">1. Diagnosis Conf (40%)</div>
-            <div style="font-weight: 700; color: #fff; font-size: 1.05rem;">{{ (latest_run.diagnosis_confidence * 100)|round(1) }}%</div>
-            <div style="font-size: 0.7rem; color: var(--text-dim);">Weighted: {{ (latest_run.diagnosis_confidence * 0.40 * 100)|round(1) }}%</div>
-          </div>
-
-          <div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">2. Retrieval Sim (40%)</div>
-            <div style="font-weight: 700; color: #fff; font-size: 1.05rem;">{{ (latest_run.retrieval_similarity * 100)|round(1) }}%</div>
-            <div style="font-size: 0.7rem; color: var(--text-dim);">Weighted: {{ (latest_run.retrieval_similarity * 0.40 * 100)|round(1) }}%</div>
-          </div>
-
-          <div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">3. Resolution Comp (20%)</div>
-            <div style="font-weight: 700; color: #fff; font-size: 1.05rem;">{{ (latest_run.resolution_completeness * 100)|round(1) }}%</div>
-            <div style="font-size: 0.7rem; color: var(--text-dim);">Weighted: {{ (latest_run.resolution_completeness * 0.20 * 100)|round(1) }}%</div>
-          </div>
-        </div>
-
-        <div style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-muted);">
-          <strong>Formula:</strong> Final Confidence = ({{ (latest_run.diagnosis_confidence * 100)|round(1) }}% &times; 0.40) + ({{ (latest_run.retrieval_similarity * 100)|round(1) }}% &times; 0.40) + ({{ (latest_run.resolution_completeness * 100)|round(1) }}% &times; 0.20) = <strong>{{ (latest_run.final_confidence * 100)|round(1) }}%</strong>
-        </div>
-      </div>
-
-      <!-- AGENT 5: ESCALATION AGENT -->
-      <div class="agent-card agent-5">
-        <div class="agent-header">
-          <div class="agent-title">
-            <span>🏁</span> Agent 5: Escalation Agent
-          </div>
-          <span class="badge {% if latest_run.outcome == 'AUTO_RESOLVE' %}badge-resolved{% else %}badge-escalated{% endif %}">
-            {{ latest_run.outcome }}
-          </span>
-        </div>
-
-        {% if latest_run.outcome == 'AUTO_RESOLVE' %}
-          <div style="font-size: 0.88rem; color: #6EE7B7;">
-            ✅ <strong>Auto-Resolution Success:</strong> Quality gate threshold satisfied. The grounded procedure has been provided directly to the passenger. No external Jira escalation or human email dispatch was required.
-          </div>
-        {% else %}
-          <div style="font-size: 0.88rem; color: #FCA5A5;">
-            🚨 <strong>Human Support Handoff:</strong> Confidence fell below 70% threshold. Preserving collected AI context for ground agent.
-            <div style="margin-top: 0.75rem; background: rgba(11, 20, 44, 0.7); padding: 0.85rem; border-radius: 8px; font-size: 0.82rem;">
-              <div><strong>Escalation Reason:</strong> {{ ticket.escalation_reason }}</div>
-              
-              <div style="margin-top: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center;">
-                  <div>
-                    <strong>Jira Ticket Integration:</strong>
-                    {% if latest_run.jira_issue_key or ticket.jira_issue_key %}
-                      <span class="badge badge-resolved">Created</span>
-                    {% elif latest_run.jira_status == 'Created' %}
-                      <span class="badge badge-resolved">Created</span>
-                    {% elif latest_run.jira_status == 'Failed' %}
-                      <span class="badge badge-escalated">Failed</span>
-                    {% else %}
-                      <span class="badge badge-open">{{ latest_run.jira_status or 'Not Configured' }}</span>
-                    {% endif %}
-                  </div>
-                  <div>
-                    <strong>Support Email Alert:</strong>
-                    {% if latest_run.email_status == 'Sent' %}
-                      <span class="badge badge-resolved">Sent</span>
-                    {% elif latest_run.email_status == 'Failed' %}
-                      <span class="badge badge-escalated">Failed</span>
-                    {% else %}
-                      <span class="badge badge-open">{{ latest_run.email_status or 'Not Configured' }}</span>
-                    {% endif %}
-                  </div>
-                </div>
-
-                {% set j_key = latest_run.jira_issue_key or ticket.jira_issue_key %}
-                {% set j_url = latest_run.jira_issue_url or ticket.jira_issue_url %}
-                {% if j_key %}
-                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.82rem; color: #6EE7B7; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                  <span>🎫 <strong>Issue Key:</strong> <span style="font-family: monospace; font-weight: 700; color: #fff;">{{ j_key }}</span></span>
-                  {% if j_url %}
-                    <span>&bull; <a href="{{ j_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); text-decoration: underline; font-weight: 600;">View Jira Ticket ↗</a></span>
-                  {% endif %}
-                </div>
-                {% elif latest_run.jira_status == 'Failed' and latest_run.jira_message %}
-                <div style="font-size: 0.75rem; color: #FCA5A5;">
-                  <strong>Jira Error:</strong> {{ latest_run.jira_message }}
-                </div>
-                {% endif %}
-
-                {% if latest_run.email_status == 'Failed' and latest_run.email_message %}
-                <div style="font-size: 0.75rem; color: #FCA5A5;">
-                  <strong>Email Error:</strong> {{ latest_run.email_message }}
-                </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        {% endif %}
-      </div>
-
     </div>
 
-  {% else %}
-    
-    <!-- Initial State before running Multi-Agent -->
-    <div class="glass-panel" style="text-align: center; padding: 2.5rem 1.5rem;">
-      <div style="font-size: 3rem; margin-bottom: 0.75rem;">🤖</div>
-      <h3 style="font-family: var(--font-display); font-size: 1.4rem; color: #fff;">
-        Ready to Execute AeroAssist Multi-Agent Pipeline
-      </h3>
-      <p style="color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 1.5rem; font-size: 0.9rem;">
-        Click <strong>"Run Multi-Agent Resolution"</strong> to execute the 5 agents sequentially: Diagnosis &rarr; Retrieval (reusing M2 RAG) &rarr; Resolution &rarr; Validation Gate (70% threshold) &rarr; Auto-Resolve or Human Support Escalation.
-      </p>
-
-      <button type="button" onclick="document.getElementById('btn-run-multi-agent').click();" class="btn btn-primary" style="padding: 0.75rem 2rem; font-size: 1rem;">
-        ⚡ Run 5-Agent Resolution Pipeline
-      </button>
+    <div style="margin-bottom: 0.5rem;">
+      <div class="kpi-label">Title</div>
+      <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">
+        {{ ticket.title }}
+      </div>
     </div>
 
+    <div>
+      <div class="kpi-label">Description</div>
+      <div style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
+        {{ ticket.description }}
+      </div>
+    </div>
+  </div>
   {% endif %}
-
 </div>
 
-<!-- Bottom Navigation Actions -->
-<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
-  <a href="{{ url_for('ticket_detail', ticket_id=ticket.ticket_id) }}" class="btn btn-outline">
-    ← Back to Ticket {{ ticket.ticket_id }}
-  </a>
+<!-- Horizontal / Responsive Progress Stepper -->
+<div class="card-panel" style="padding: 1rem 1.5rem;">
+  <div class="kpi-label" style="margin-bottom: 0.5rem;">Sequential 5-Agent Execution Pipeline</div>
+  <div class="stepper-container">
+    
+    <div class="stepper-step {% if latest_run %}completed{% else %}active{% endif %}">
+      <div class="step-bubble">1</div>
+      <div class="step-label">Diagnosis</div>
+      <div class="step-sublabel">Intent & Extraction</div>
+    </div>
+
+    <div class="stepper-connector"></div>
+
+    <div class="stepper-step {% if latest_run %}completed{% else %}active{% endif %}">
+      <div class="step-bubble">2</div>
+      <div class="step-label">Retrieval</div>
+      <div class="step-sublabel">TF-IDF Vector RAG</div>
+    </div>
+
+    <div class="stepper-connector"></div>
+
+    <div class="stepper-step {% if latest_run %}completed{% else %}active{% endif %}">
+      <div class="step-bubble">3</div>
+      <div class="step-label">Resolution</div>
+      <div class="step-sublabel">Grounded Actions</div>
+    </div>
+
+    <div class="stepper-connector"></div>
+
+    <div class="stepper-step {% if latest_run %}completed{% else %}active{% endif %}">
+      <div class="step-bubble">4</div>
+      <div class="step-label">Validation</div>
+      <div class="step-sublabel">70% Quality Gate</div>
+    </div>
+
+    <div class="stepper-connector"></div>
+
+    <div class="stepper-step {% if latest_run %}{% if latest_run.outcome == 'AUTO_RESOLVE' %}completed{% else %}failed{% endif %}{% else %}active{% endif %}">
+      <div class="step-bubble">5</div>
+      <div class="step-label">Escalation</div>
+      <div class="step-sublabel">Final Decision</div>
+    </div>
+
+  </div>
 </div>
+
+{% if ticket %}
+{% if latest_run %}
+<!-- Five Sequential Agent Expandable Output Sections -->
+<div style="display: flex; flex-direction: column; gap: 1rem;">
+
+  <!-- STEP 1 — DIAGNOSIS AGENT -->
+  <div class="agent-step-card agent-1">
+    <div class="card-header" style="margin-bottom: 1rem;">
+      <div class="card-title">
+        <span>🎯</span> STEP 1 — DIAGNOSIS AGENT
+      </div>
+      <span class="badge badge-open">
+        Diagnosis Confidence: {{ ((latest_run.diagnosis_confidence or 0.85) * 100)|round(1) }}%
+      </span>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
+      <div>
+        <div class="kpi-label">Detected Category</div>
+        <div style="font-weight: 700; color: var(--primary-blue); font-size: 1rem;">
+          {{ latest_run.diagnosis_category or ticket.category }}
+        </div>
+      </div>
+      <div>
+        <div class="kpi-label">Passenger Intent</div>
+        <div style="font-weight: 600; color: var(--text-main);">
+          {{ latest_run.diagnosis_intent or 'Domain Passenger Inquiry' }}
+        </div>
+      </div>
+      <div>
+        <div class="kpi-label">Diagnosis</div>
+        <div style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5;">
+          Passenger inquiry regarding {{ (latest_run.diagnosis_category or ticket.category)|lower }} categorized under '{{ latest_run.diagnosis_intent or 'Passenger Care' }}'.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 — RETRIEVAL AGENT -->
+  <div class="agent-step-card agent-2">
+    <div class="card-header" style="margin-bottom: 1rem;">
+      <div class="card-title">
+        <span>🔍</span> STEP 2 — RETRIEVAL AGENT
+      </div>
+      <span class="badge {% if latest_run.retrieval_found %}badge-auto-resolve{% else %}badge-escalated{% endif %}">
+        Similarity Score: {{ ((latest_run.retrieval_similarity or 0.5) * 100)|round(1) }}%
+      </span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1rem;">
+      <div>
+        <div class="kpi-label">Knowledge Found</div>
+        <div>
+          {% if latest_run.retrieval_found %}
+            <span class="badge badge-auto-resolve">True (Domain Match Found)</span>
+          {% else %}
+            <span class="badge badge-escalated">False (Below Threshold)</span>
+          {% endif %}
+        </div>
+      </div>
+      <div>
+        <div class="kpi-label">Retrieved Article ID</div>
+        <div style="font-family: monospace; font-weight: 700; color: var(--primary-blue); font-size: 1rem;">
+          {{ latest_run.retrieval_kb_id or ticket.retrieved_kb_id or 'None' }}
+        </div>
+      </div>
+      <div>
+        <div class="kpi-label">Similarity Score</div>
+        <div style="font-family: monospace; font-weight: 700; color: var(--emerald-text); font-size: 1.05rem;">
+          {{ ((latest_run.retrieval_similarity or 0.0) * 100)|round(1) }}%
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="kpi-label">Relevant Knowledge Context</div>
+      <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.85rem 1rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.6;">
+        Procedural knowledge retrieved from Knowledge Base record <strong>{{ latest_run.retrieval_kb_id or ticket.retrieved_kb_id }}</strong> via TF-IDF vectorization and cosine similarity scoring.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 — RESOLUTION AGENT -->
+  <div class="agent-step-card agent-3">
+    <div class="card-header" style="margin-bottom: 1rem;">
+      <div class="card-title">
+        <span>📝</span> STEP 3 — RESOLUTION AGENT
+      </div>
+      <span class="badge badge-auto-resolve">
+        Resolution Completeness: {{ ((latest_run.resolution_completeness or 0.9) * 100)|round(1) }}%
+      </span>
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      <div class="kpi-label">Generated Grounded Resolution</div>
+      <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; font-size: 0.9rem; color: var(--text-main); line-height: 1.75; white-space: pre-line; margin-top: 0.35rem;">
+        {{ ticket.resolution_text or 'Procedural resolution synthesized based on airport knowledge base articles.' }}
+      </div>
+    </div>
+
+    <div>
+      <div class="kpi-label">Recommended Support Steps</div>
+      <div style="background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.85rem 1rem; font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">
+        1. Review procedural requirements above.<br>
+        2. Keep relevant booking documents or flight credentials accessible.<br>
+        3. Proceed according to the designated airport operational guidelines.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 — VALIDATION AGENT -->
+  <div class="agent-step-card agent-4">
+    <div class="card-header" style="margin-bottom: 1rem;">
+      <div class="card-title">
+        <span>⚖️</span> STEP 4 — VALIDATION AGENT
+      </div>
+      <span class="badge {% if latest_run.final_confidence and latest_run.final_confidence >= 0.70 %}badge-auto-resolve{% else %}badge-escalated{% endif %}">
+        {% if latest_run.final_confidence and latest_run.final_confidence >= 0.70 %}Gate Passed (&ge; 70%){% else %}Gate Failed (&lt; 70%){% endif %}
+      </span>
+    </div>
+
+    <!-- Confidence Weighted Breakdown -->
+    <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 0.75rem;">
+      <div class="kpi-label" style="margin-bottom: 0.75rem;">Weighted Calculation Breakdown:</div>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Diagnosis (40%)</div>
+          <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">
+            {{ ((latest_run.diagnosis_confidence or 0.85) * 100)|round(1) }}%
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Retrieval (40%)</div>
+          <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">
+            {{ ((latest_run.retrieval_similarity or 0.5) * 100)|round(1) }}%
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Completeness (20%)</div>
+          <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">
+            {{ ((latest_run.resolution_completeness or 0.9) * 100)|round(1) }}%
+          </div>
+        </div>
+        <div style="border-left: 2px solid var(--border-color); padding-left: 1rem;">
+          <div style="font-size: 0.75rem; color: var(--primary-blue); font-weight: 700;">Final Confidence</div>
+          <div style="font-size: 1.5rem; font-weight: 800; font-family: monospace; color: {% if latest_run.final_confidence and latest_run.final_confidence >= 0.70 %}#059669{% else %}#DC2626{% endif %};">
+            {{ ((latest_run.final_confidence or 0) * 100)|round(1) }}%
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.85rem; font-family: monospace;">
+        Formula: Final = (Diagnosis &times; 0.40) + (Retrieval &times; 0.40) + (Completeness &times; 0.20)
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5 — ESCALATION AGENT -->
+  <div class="agent-step-card agent-5 {% if latest_run.outcome == 'AUTO_RESOLVE' %}auto-resolve{% else %}escalate{% endif %}">
+    <div class="card-header" style="margin-bottom: 1rem;">
+      <div class="card-title">
+        <span>🏁</span> STEP 5 — ESCALATION AGENT
+      </div>
+      <span class="badge {% if latest_run.outcome == 'AUTO_RESOLVE' %}badge-auto-resolve{% else %}badge-escalated{% endif %}">
+        Final Decision: {{ latest_run.outcome }}
+      </span>
+    </div>
+
+    {% if latest_run.outcome == 'AUTO_RESOLVE' %}
+      <div style="background-color: var(--emerald-light); border: 1px solid var(--emerald-border); border-radius: var(--radius-md); padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h4 style="color: var(--emerald-text); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem;">
+              ✅ AI Resolved
+            </h4>
+            <p style="color: var(--emerald-text); font-size: 0.88rem; margin: 0; line-height: 1.5;">
+              Final confidence ({{ ((latest_run.final_confidence or 0) * 100)|round(1) }}%) meets or exceeds the 70% threshold. Solution is stored and viewable under AI Solutions.
+            </p>
+          </div>
+          <a href="{{ url_for('ai_solutions_view', ticket_id=ticket.ticket_id) }}" class="btn btn-success">
+            View AI Solution ➔
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <div style="background-color: var(--crimson-light); border: 1px solid var(--crimson-border); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h4 style="color: var(--crimson-text); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem;">
+              🚨 Human Support Required
+            </h4>
+            <p style="color: var(--crimson-text); font-size: 0.88rem; margin-bottom: 0.25rem;">
+              {{ ticket.escalation_reason or 'Final confidence is below the 70% threshold. Ticket transferred to human customer support.' }}
+            </p>
+          </div>
+          <a href="{{ url_for('escalated_tickets_view', ticket_id=ticket.ticket_id) }}" class="btn btn-outline" style="color: #DC2626; border-color: var(--crimson-border);">
+            View Escalation Details ➔
+          </a>
+        </div>
+      </div>
+
+      <!-- External Integrations Status -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+        <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem;">
+          <div class="kpi-label">Jira Integration Status</div>
+          <div style="font-weight: 700; color: var(--text-main);">{{ latest_run.jira_status or 'Not Configured' }}</div>
+          {% if latest_run.jira_issue_key %}
+          <div style="font-size: 0.8rem; color: var(--primary-blue); margin-top: 0.2rem;">Key: {{ latest_run.jira_issue_key }}</div>
+          {% endif %}
+        </div>
+        <div style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem;">
+          <div class="kpi-label">Email Notification Status</div>
+          <div style="font-weight: 700; color: var(--text-main);">{{ latest_run.email_status or 'Not Configured' }}</div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% else %}
+<!-- Initial Call to Action -->
+<div class="card-panel" style="text-align: center; padding: 3rem 1rem;">
+  <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">⚡</div>
+  <h3 style="font-size: 1.25rem; color: var(--text-main); margin-bottom: 0.25rem;">Five-Agent Pipeline Ready</h3>
+  <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 480px; margin: 0 auto 1.5rem;">
+    Click the "Run AI Resolution" button to execute all five sequential agents on ticket <strong>{{ ticket.ticket_id }}</strong>.
+  </p>
+  <button id="runAgentsBtn" data-ticket-id="{{ ticket.ticket_id }}" class="btn btn-primary btn-lg">
+    <span>⚡</span> Run AI Resolution
+  </button>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card-panel" style="text-align: center; padding: 3rem 1rem;">
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">Please create or select a support ticket to run the Multi-Agent Ticket Resolution.</p>
+  <a href="{{ url_for('create_ticket_view') }}" class="btn btn-primary">➕ Raise Support Ticket</a>
+</div>
+{% endif %}
 
 {% endblock %}

@@ -1,48 +1,45 @@
 {% extends "base.html" %}
 
-{% block title %}Support Tickets - AeroAssist AI{% endblock %}
+{% block title %}My Tickets - AeroAssist AI{% endblock %}
+{% block page_title %}My Support Tickets{% endblock %}
 
 {% block content %}
 
-<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+<!-- Header & New Ticket Button -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
   <div>
-    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-cyan); font-weight: 700;">
-      Ticket Management (Milestone 1)
-    </span>
-    <h1 style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 800; color: #fff; margin-top: 0.2rem;">
-      Airport Support Tickets
+    <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main);">
+      My Support Tickets
     </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+      Browse, search, and manage your airline and airport support inquiries.
+    </p>
   </div>
-  
-  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-    <form method="POST" action="{{ url_for('seed_samples') }}" style="display: inline;">
-      <button type="submit" class="btn btn-outline">
-        🧪 Seed 8 Test Tickets
-      </button>
-    </form>
-    <a href="{{ url_for('create_ticket_view') }}" class="btn btn-primary">
-      <span>➕</span> Raise Support Ticket
-    </a>
-  </div>
+  <a href="{{ url_for('create_ticket_view') }}" class="btn btn-primary">
+    <span>➕</span> Raise New Ticket
+  </a>
 </div>
 
-<!-- Filters Bar -->
-<div class="glass-panel" style="padding: 1.25rem; margin-bottom: 1.5rem;">
-  <form method="GET" action="{{ url_for('tickets_list') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto; gap: 1rem; align-items: flex-end;">
+<!-- Filters and Search Bar -->
+<div class="card-panel" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+  <form method="GET" action="{{ url_for('tickets_list') }}" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
     
-    <div>
-      <label class="form-label" style="font-size: 0.75rem;">Category Filter</label>
-      <select name="category" class="form-select" onchange="this.form.submit()">
+    <!-- Search Query -->
+    <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by Ticket ID, Title, PNR, Flight..." style="flex: 1; min-width: 240px;">
+
+    <!-- Category Filter -->
+    <div style="min-width: 170px;">
+      <select name="category" class="form-control form-select">
         <option value="All" {% if selected_category == 'All' %}selected{% endif %}>All Categories</option>
         {% for cat in categories %}
-          <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
         {% endfor %}
       </select>
     </div>
 
-    <div>
-      <label class="form-label" style="font-size: 0.75rem;">Status Filter</label>
-      <select name="status" class="form-select" onchange="this.form.submit()">
+    <!-- Status Filter -->
+    <div style="min-width: 140px;">
+      <select name="status" class="form-control form-select">
         <option value="All" {% if selected_status == 'All' %}selected{% endif %}>All Statuses</option>
         <option value="Open" {% if selected_status == 'Open' %}selected{% endif %}>Open</option>
         <option value="In Progress" {% if selected_status == 'In Progress' %}selected{% endif %}>In Progress</option>
@@ -51,83 +48,81 @@
       </select>
     </div>
 
-    <div>
-      <label class="form-label" style="font-size: 0.75rem;">Search Keyword / Flight / PNR</label>
-      <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search ticket text...">
+    <!-- Resolution Filter -->
+    <div style="min-width: 160px;">
+      <select name="resolution_status" class="form-control form-select">
+        <option value="All" {% if selected_resolution == 'All' %}selected{% endif %}>Decision: All</option>
+        <option value="AUTO_RESOLVE" {% if selected_resolution == 'AUTO_RESOLVE' %}selected{% endif %}>AI Resolved</option>
+        <option value="ESCALATE" {% if selected_resolution == 'ESCALATE' %}selected{% endif %}>Escalated</option>
+      </select>
     </div>
 
-    <div>
-      <button type="submit" class="btn btn-primary" style="height: 42px;">Filter</button>
-      {% if selected_category != 'All' or selected_status != 'All' or search_query %}
-        <a href="{{ url_for('tickets_list') }}" class="btn btn-outline" style="height: 42px;">Reset</a>
-      {% endif %}
-    </div>
-
+    <button type="submit" class="btn btn-primary btn-sm">
+      Filter
+    </button>
+    
+    {% if search_query or selected_category != 'All' or selected_status != 'All' or selected_resolution != 'All' %}
+    <a href="{{ url_for('tickets_list') }}" class="btn btn-outline btn-sm">
+      Reset
+    </a>
+    {% endif %}
   </form>
 </div>
 
-<!-- Ticket List Table -->
-<div class="glass-panel">
+<!-- Tickets Table -->
+<div class="card-panel">
+  <div class="card-header">
+    <div class="card-title">
+      <span>📋</span> Support Ticket Records ({{ tickets|length }})
+    </div>
+  </div>
+
   {% if tickets %}
   <div class="table-responsive">
-    <table class="table">
+    <table class="saas-table">
       <thead>
         <tr>
           <th>Ticket ID</th>
-          <th>Passenger</th>
-          <th>Title & Category</th>
-          <th>Airport / Flight</th>
-          <th>Priority / Severity</th>
+          <th>Issue</th>
+          <th>Category</th>
+          <th>Priority</th>
           <th>Status</th>
-          <th>AI Workflow</th>
-          <th>Actions</th>
+          <th>AI Decision</th>
+          <th>Confidence</th>
+          <th>Date</th>
+          <th style="text-align: right;">Action</th>
         </tr>
       </thead>
       <tbody>
         {% for t in tickets %}
         <tr>
           <td>
-            <a href="{{ url_for('ticket_detail', ticket_id=t.ticket_id) }}" style="color: var(--accent-cyan); font-weight: 700; text-decoration: none;">
+            <a href="{{ url_for('ticket_detail', ticket_id=t.ticket_id) }}" style="font-family: monospace; font-weight: 700; color: var(--primary-blue);">
               {{ t.ticket_id }}
             </a>
-            <div style="font-size: 0.7rem; color: var(--text-dim);">{{ t.created_at[:10] if t.created_at else '' }}</div>
           </td>
           <td>
-            <div style="font-weight: 600;">{{ t.passenger_name }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-dim);">{{ t.passenger_email }}</div>
+            <div style="font-weight: 600; color: var(--text-main); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ t.title }}
+            </div>
+            {% if t.flight_number or t.booking_ref %}
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">
+              {% if t.flight_number %}Flight {{ t.flight_number }}{% endif %}
+              {% if t.booking_ref %}&bull; PNR: {{ t.booking_ref }}{% endif %}
+            </div>
+            {% endif %}
           </td>
           <td>
-            <div style="font-weight: 600; color: #fff;">{{ t.title }}</div>
-            <div style="font-size: 0.75rem; color: var(--accent-cyan); margin-top: 0.15rem;">
-              🏷️ {{ t.category }}
-              {% if t.classification_confidence %}
-                <span style="color: var(--text-dim);">({{ (t.classification_confidence * 100)|round(0) }}% conf)</span>
-              {% endif %}
-            </div>
+            <span class="badge badge-category">{{ t.category }}</span>
           </td>
           <td>
-            <div style="font-size: 0.82rem; font-family: monospace; color: #7DD3FC;">
-              {{ t.flight_number or '—' }} {% if t.booking_ref %}({{ t.booking_ref }}){% endif %}
-            </div>
-            <div style="font-size: 0.75rem; color: var(--text-dim);">
-              📍 {{ t.airport or 'General' }}
-            </div>
-          </td>
-          <td>
-            <div>
-              {% if t.priority == 'Critical' %}
-                <span class="badge badge-prio-critical">Critical</span>
-              {% elif t.priority == 'High' %}
-                <span class="badge badge-prio-high">High</span>
-              {% elif t.priority == 'Medium' %}
-                <span class="badge badge-prio-med">Medium</span>
-              {% else %}
-                <span class="badge badge-prio-low">Low</span>
-              {% endif %}
-            </div>
-            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem;">
-              Sev: {{ t.severity }}
-            </div>
+            {% if t.priority == 'Critical' %}
+              <span class="badge badge-critical">Critical</span>
+            {% elif t.priority == 'High' %}
+              <span class="badge badge-progress">High</span>
+            {% else %}
+              <span class="badge badge-category">{{ t.priority }}</span>
+            {% endif %}
           </td>
           <td>
             {% if t.status == 'Resolved' %}
@@ -142,26 +137,29 @@
           </td>
           <td>
             {% if t.ai_resolution_status == 'AUTO_RESOLVE' %}
-              <span class="badge badge-resolved" title="Final Confidence: {{ (t.final_confidence * 100)|round(1) if t.final_confidence else 'N/A' }}%">
-                🤖 Auto-Resolved
-              </span>
+              <span class="badge badge-auto-resolve">✅ AUTO_RESOLVE</span>
             {% elif t.ai_resolution_status == 'ESCALATE' %}
-              <span class="badge badge-escalated" title="Escalated to Human Support">
-                🚨 Escalated
-              </span>
+              <span class="badge badge-escalated">🚨 ESCALATE</span>
             {% else %}
-              <span class="badge badge-open">Pending AI</span>
+              <span class="badge badge-pending">⏳ PENDING</span>
             {% endif %}
           </td>
           <td>
-            <div style="display: flex; gap: 0.4rem;">
-              <a href="{{ url_for('ticket_detail', ticket_id=t.ticket_id) }}" class="btn btn-outline btn-sm">
-                Details
-              </a>
-              <a href="{{ url_for('multi_agent_studio_view', ticket_id=t.ticket_id) }}" class="btn btn-primary btn-sm">
-                ⚡ Resolve
-              </a>
-            </div>
+            {% if t.final_confidence %}
+              <span style="font-family: monospace; font-weight: 700; color: {% if t.final_confidence >= 0.70 %}#059669{% else %}#DC2626{% endif %};">
+                {{ (t.final_confidence * 100)|round(1) }}%
+              </span>
+            {% else %}
+              <span style="color: var(--text-dim); font-size: 0.8rem;">—</span>
+            {% endif %}
+          </td>
+          <td style="color: var(--text-muted); font-size: 0.82rem; white-space: nowrap;">
+            {{ t.created_at[:10] if t.created_at else 'Today' }}
+          </td>
+          <td style="text-align: right;">
+            <a href="{{ url_for('ticket_detail', ticket_id=t.ticket_id) }}" class="btn btn-secondary btn-sm">
+              View
+            </a>
           </td>
         </tr>
         {% endfor %}
@@ -170,8 +168,12 @@
   </div>
   {% else %}
   <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
-    <h3>No Tickets Found Matching Criteria</h3>
-    <p style="font-size: 0.9rem; margin-top: 0.3rem;">Try adjusting filters or seed sample tickets.</p>
+    <div style="font-size: 2.25rem; margin-bottom: 0.5rem;">🎫</div>
+    <h3 style="font-size: 1.15rem; color: var(--text-main); margin-bottom: 0.25rem;">No Tickets Matching Filter</h3>
+    <p style="font-size: 0.88rem; max-width: 420px; margin: 0 auto 1.25rem;">
+      No support tickets match the selected filters or query. Try resetting filters.
+    </p>
+    <a href="{{ url_for('tickets_list') }}" class="btn btn-primary btn-sm">Reset All Filters</a>
   </div>
   {% endif %}
 </div>
