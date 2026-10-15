@@ -1,0 +1,80 @@
+# Environment variables and secrets (NEVER commit .env)
+.env
+.env.*
+!.env.example
+!backend/.env.example
+
+# Python virtual environments & packages
+venv/
+.venv/
+env/
+ENV/
+backend/venv/
+backend/.venv/
+*.egg-info/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+pip-wheel-metadata/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Unit test / coverage reporting
+.pytest_cache/
+backend/.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Node / Frontend artifacts
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+.npm
+.eslintcache
+*.tsbuildinfo
+
+# SQLite databases & local uploads
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.db.backup
+*.db.pre_fix_backup
+*.sqlite
+*.sqlite3
+test_aero.db
+uploads/
+backend/uploads/
+
+# OS generated files & IDE caches
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.log
