@@ -50,6 +50,15 @@ class Settings(BaseSettings):
     # Uploads & Storage
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_BYTES: int = 15 * 1024 * 1024  # 15 MB
+
+    # Email / SMTP Integration
+    SMTP_ENABLED: bool = False
+    SMTP_HOST: str = "smtp.example.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = "support@aeroassistant.com"
+    SMTP_USE_TLS: bool = True
     
     # CORS
     CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000,http://localhost:8081,http://127.0.0.1:8081"

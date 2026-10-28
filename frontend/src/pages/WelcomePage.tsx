@@ -41,7 +41,7 @@ export const WelcomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-sky-500/30 relative">
+    <div className="min-h-screen bg-[#FFFFFF] text-slate-100 flex flex-col font-sans selection:bg-sky-500/30 relative">
       <FlightBackground variant="hero" showRadar={true} />
 
       {/* Navigation Header */}
@@ -251,7 +251,7 @@ export const WelcomePage: React.FC = () => {
       </section>
 
       {/* Section 2: Knowledge-Grounded AI Assistance */}
-      <section id="solutions" className="py-16 md:py-20 bg-slate-950 border-b border-slate-800/80">
+      <section id="solutions" className="py-16 md:py-20 bg-[#FFFFFF] border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1 bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
@@ -376,7 +376,7 @@ export const WelcomePage: React.FC = () => {
       </section>
 
       {/* Section 4: AI Performance Monitoring & Human Escalation */}
-      <section id="analytics" className="py-16 md:py-20 bg-slate-950 border-b border-slate-800/80">
+      <section id="analytics" className="py-16 md:py-20 bg-[#FFFFFF] border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-4">
@@ -509,7 +509,7 @@ export const WelcomePage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="mt-auto py-10 bg-slate-950 border-t border-slate-800 text-xs text-slate-500">
+      <footer className="mt-auto py-10 bg-[#FFFFFF] border-t border-slate-800 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2.5 text-slate-400">
             <div className="w-6 h-6 rounded-lg bg-sky-600 flex items-center justify-center text-white font-bold text-xs">

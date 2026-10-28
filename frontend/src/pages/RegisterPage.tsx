@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
-import { Plane, Lock, Mail, User as UserIcon, ArrowRight, AlertCircle, Shield, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Plane, Lock, Mail, User as UserIcon, ArrowRight, AlertCircle, Shield, Eye, EyeOff } from 'lucide-react';
 import { UserRole } from '../types';
 import { getApiErrorMessage } from '../services/api';
 import { FlightBackground } from '../components/common/FlightBackground';
@@ -33,7 +33,7 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden selection:bg-sky-500/30">
+    <div className="min-h-screen bg-[#FFFFFF] flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden selection:bg-sky-500/30">
       {/* Moving Aviation Background */}
       <FlightBackground variant="full" showRadar={true} />
 
@@ -161,10 +161,6 @@ export const RegisterPage: React.FC = () => {
           Already registered?{' '}
           <Link to="/login" className="text-sky-400 hover:text-sky-300 font-semibold hover:underline">
             Sign In here
-          </Link>
-          {' · '}
-          <Link to="/welcome" className="text-slate-400 hover:text-slate-200 hover:underline">
-            Back to Welcome
           </Link>
         </p>
       </div>

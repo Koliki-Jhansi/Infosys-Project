@@ -116,6 +116,10 @@ export const ticketsApi = {
     const res = await api.get<{ items: Ticket[]; total: number; page: number; size: number; pages: number }>('/tickets', { params });
     return res.data;
   },
+  getEscalated: async (params?: any) => {
+    const res = await api.get<{ items: Ticket[]; total: number; page: number; size: number; pages: number }>('/tickets/escalated', { params });
+    return res.data;
+  },
   getById: async (id: number) => {
     const res = await api.get<Ticket>(`/tickets/${id}`);
     return res.data;

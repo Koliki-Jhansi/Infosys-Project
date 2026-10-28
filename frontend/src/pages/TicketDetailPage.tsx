@@ -4,7 +4,6 @@ import { ticketsApi, reviewsApi, jiraApi } from '../services/api';
 import { Ticket, TicketNote, JiraRecord } from '../types';
 import { useAuth } from '../features/auth/AuthContext';
 import {
-  FileText,
   Clock,
   User,
   Shield,
@@ -12,20 +11,15 @@ import {
   CheckCircle2,
   Cpu,
   RefreshCw,
-  GitBranch,
   ArrowLeft,
-  Paperclip,
   Check,
   X,
   Sliders,
-  AlertCircle,
-  Plane,
   Sparkles,
   Send,
   MessageSquare,
   Bot,
   ExternalLink,
-  ShieldCheck,
   CheckCheck,
   Layers
 } from 'lucide-react';
@@ -300,11 +294,11 @@ export const TicketDetailPage: React.FC = () => {
 
           {/* Multi-Agent Workflow Trigger */}
           <Link
-            to={`/workflows?ticketId=${ticket.id}`}
+            to={`/ai-solution?ticketId=${ticket.id}`}
             className="btn-aviation px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-indigo-500/25 transition-all flex items-center gap-1.5 active:scale-95"
           >
             <Bot className="w-3.5 h-3.5" />
-            5-Agent Workflow
+            View Multi-Agent Workflow
           </Link>
 
           {/* Reclassify */}
@@ -635,45 +629,6 @@ export const TicketDetailPage: React.FC = () => {
                   <span className="font-semibold text-sky-300 block font-mono">Recommended Action</span>
                   <p className="text-slate-300 leading-relaxed">{c.recommended_next_action}</p>
                 </div>
-
-                {/* Explainable Confidence Breakdown */}
-                {c.confidence_breakdown && (
-                  <div className="pt-2 border-t border-slate-800/80 space-y-2">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block font-mono">
-                      Confidence Signal Verification
-                    </span>
-                    <div className="text-[11px] space-y-1.5 font-mono text-slate-300">
-                      <div className="flex justify-between py-1 border-b border-slate-800/60">
-                        <span>Structured Validity:</span>
-                        <span className="text-sky-400 font-bold">
-                          {c.confidence_breakdown.structured_validity?.score} /{' '}
-                          {c.confidence_breakdown.structured_validity?.max} pts
-                        </span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-slate-800/60">
-                        <span>Passenger Evidence Completeness:</span>
-                        <span className="text-sky-400 font-bold">
-                          {c.confidence_breakdown.input_completeness?.score} /{' '}
-                          {c.confidence_breakdown.input_completeness?.max} pts
-                        </span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-slate-800/60">
-                        <span>Policy Signal Agreement:</span>
-                        <span className="text-sky-400 font-bold">
-                          {c.confidence_breakdown.signal_agreement?.score} /{' '}
-                          {c.confidence_breakdown.signal_agreement?.max} pts
-                        </span>
-                      </div>
-                      <div className="flex justify-between py-1">
-                        <span>Diagnostic Consistency:</span>
-                        <span className="text-sky-400 font-bold">
-                          {c.confidence_breakdown.diagnostic_consistency?.score} /{' '}
-                          {c.confidence_breakdown.diagnostic_consistency?.max} pts
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* Human Review Sign-off if already reviewed */}
                 {c.is_reviewed && (

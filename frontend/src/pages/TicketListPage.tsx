@@ -206,11 +206,11 @@ export const TicketListPage: React.FC = () => {
               <Plane className="w-5 h-5 -rotate-45" />
             </span>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-display">
-              Passenger Support Ticket Directory
+              Ticket Management
             </h1>
           </div>
           <p className="text-sm text-slate-300 mt-1">
-            Browse, search, and manage all passenger inquiries, baggage claims, and flight disruption tickets.
+            Search and manage passenger inquiries, priority, confidence scores, and status.
           </p>
         </div>
 

@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from app.models.ticket import TicketStatus, TicketCategory, TicketUrgency, BusinessImpact, EnvironmentType
 from app.schemas.auth import UserResponse
 from app.schemas.classification import ClassificationResponse
+from app.schemas.jira import JiraIssueRecordResponse
 
 class TicketCreate(BaseModel):
     title: Optional[str] = None
@@ -96,6 +97,7 @@ class TicketResponse(BaseModel):
     reporter_id: int
     reporter: Optional[UserResponse] = None
     classification: Optional[ClassificationResponse] = None
+    jira_records: List[JiraIssueRecordResponse] = []
     created_at: datetime
     updated_at: datetime
 

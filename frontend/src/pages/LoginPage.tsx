@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
-import { Plane, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff, ShieldCheck, Sparkles } from 'lucide-react';
+import { Plane, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { getApiErrorMessage } from '../services/api';
 import { FlightBackground } from '../components/common/FlightBackground';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, loginAsDemo } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,22 +29,8 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleDemo = async (role: 'ADMIN' | 'SUPPORT_AGENT' | 'PASSENGER') => {
-    if (loading) return;
-    setError('');
-    setLoading(true);
-    try {
-      await loginAsDemo(role);
-      navigate('/home');
-    } catch (err: any) {
-      setError(getApiErrorMessage(err, 'Demo login failed.'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden selection:bg-sky-500/30">
+    <div className="min-h-screen bg-[#FFFFFF] flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden selection:bg-sky-500/30">
       {/* Moving Aviation Background */}
       <FlightBackground variant="full" showRadar={true} />
 
@@ -130,41 +116,10 @@ export const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-800/80">
-          <p className="text-[11px] text-slate-400 text-center font-medium mb-3 flex items-center justify-center gap-1.5">
-            <Sparkles className="w-3 h-3 text-sky-400" />
-            Quick test with pre-seeded personas:
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => handleDemo('ADMIN')}
-              className="px-2 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-sky-500/30 text-[11px] font-medium text-slate-200 transition-all text-center hover:scale-[1.02] shadow-sm"
-            >
-              Airline Admin
-            </button>
-            <button
-              onClick={() => handleDemo('SUPPORT_AGENT')}
-              className="px-2 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-sky-500/30 text-[11px] font-medium text-slate-200 transition-all text-center hover:scale-[1.02] shadow-sm"
-            >
-              Support Agent
-            </button>
-            <button
-              onClick={() => handleDemo('PASSENGER')}
-              className="px-2 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-sky-500/30 text-[11px] font-medium text-slate-200 transition-all text-center hover:scale-[1.02] shadow-sm"
-            >
-              Passenger
-            </button>
-          </div>
-        </div>
-
         <p className="text-center text-xs text-slate-400 mt-6 font-['Inter']">
           Don't have an account?{' '}
           <Link to="/register" className="text-sky-400 hover:text-sky-300 font-semibold hover:underline">
             Register here
-          </Link>
-          {' · '}
-          <Link to="/welcome" className="text-slate-400 hover:text-slate-200 hover:underline">
-            Welcome Overview
           </Link>
         </p>
       </div>

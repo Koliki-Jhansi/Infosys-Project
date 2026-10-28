@@ -203,7 +203,7 @@ export const AnalyticsPage: React.FC = () => {
             Flight Support Analytics & Quality Radar
           </h1>
           <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-            Evaluate actual model accuracy, validation rigor, latency, and confidence calibration grounded directly in verified airline database records.
+            AI model accuracy, confidence calibration, and agent pipeline performance telemetry.
           </p>
         </div>
 
@@ -329,85 +329,68 @@ export const AnalyticsPage: React.FC = () => {
         )}
       </div>
 
-      {/* Section B: 8 Key AI Performance Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Section B: 6 Key AI Performance Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         {/* 1. Total AI Evaluations */}
         <div className="aviation-glass-card rounded-2xl p-5 shadow-sm space-y-2 hover:-translate-y-1 transition-all">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Total Evaluations</span>
+            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Evaluations</span>
             <span className="p-2 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
               <Cpu className="w-4 h-4" />
             </span>
           </div>
           <p className="text-3xl font-extrabold text-white font-mono">{overview?.total_evaluations || 0}</p>
-          <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
-            <span>Evaluated population: <strong className="text-slate-200">{overview?.date_range}</strong></span>
+          <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80 font-mono">
+            <span>{overview?.successful_resolutions || 0} resolved</span>
           </div>
         </div>
 
-        {/* 2. Successful AI Resolutions */}
+        {/* 2. AI Resolution Rate */}
         <div className="aviation-glass-card rounded-2xl p-5 shadow-sm space-y-2 hover:-translate-y-1 transition-all">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">AI Resolutions</span>
+            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Resolution Rate</span>
             <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <CheckCircle2 className="w-4 h-4" />
-            </span>
-          </div>
-          <p className="text-3xl font-extrabold text-emerald-400 font-mono">
-            {overview?.successful_resolutions || 0}
-          </p>
-          <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80 flex justify-between font-mono">
-            <span>{overview?.successful_resolutions}/{overview?.total_evaluations}</span>
-            <span className="text-emerald-400 font-semibold">{overview?.ai_resolution_rate}% rate</span>
-          </div>
-        </div>
-
-        {/* 3. AI Resolution Rate */}
-        <div className="aviation-glass-card rounded-2xl p-5 shadow-sm space-y-2 hover:-translate-y-1 transition-all">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">AI Resolution Rate</span>
-            <span className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
               <TrendingUp className="w-4 h-4" />
             </span>
           </div>
-          <p className="text-3xl font-extrabold text-cyan-400 font-mono">{overview?.ai_resolution_rate ?? 0}%</p>
+          <p className="text-3xl font-extrabold text-emerald-400 font-mono">{overview?.ai_resolution_rate ?? 0}%</p>
           <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80 font-mono">
-            Autonomous resolution standard
+            Autonomous resolutions
           </p>
         </div>
 
-        {/* 4. Human Escalation Rate */}
+        {/* 3. Human Escalation Rate */}
         <div className="aviation-glass-card rounded-2xl p-5 shadow-sm space-y-2 hover:-translate-y-1 transition-all">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Human Escalation Rate</span>
+            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Escalation Rate</span>
             <span className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
               <UserCheck className="w-4 h-4" />
             </span>
           </div>
           <p className="text-3xl font-extrabold text-amber-400 font-mono">{overview?.human_escalation_rate ?? 0}%</p>
           <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80 font-mono">
-            {overview?.escalated_count || 0} routed to supervisor
+            {overview?.escalated_count || 0} routed to agent
           </p>
         </div>
 
-        {/* 5. Average Confidence Score */}
+        {/* 4. Average Confidence Score */}
         <div className="aviation-glass-card rounded-2xl p-5 shadow-sm space-y-2 hover:-translate-y-1 transition-all">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Average Confidence</span>
+            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Avg Confidence</span>
             <span className="p-2 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
               <ShieldCheck className="w-4 h-4" />
             </span>
           </div>
           <p className="text-3xl font-extrabold text-sky-400 font-mono">{overview?.avg_confidence || 0}%</p>
           <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80 font-mono">
-            Autonomous Gate: 70.0% standard
+            Threshold: 70.0%
           </p>
         </div>
 
-        {/* 6. Average Latency */}
+        {/* 5. Average Latency */}
         <div className="aviation-glass-card rounded-2xl p-5 shadow-sm space-y-2 hover:-translate-y-1 transition-all">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Average Latency</span>
+            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Avg Latency</span>
             <span className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
               <Clock className="w-4 h-4" />
             </span>
@@ -416,28 +399,14 @@ export const AnalyticsPage: React.FC = () => {
             {overview?.avg_latency_ms || 120} <span className="text-sm text-slate-400 font-sans">ms</span>
           </p>
           <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80 font-mono">
-            Pipeline start-to-completion time
+            Pipeline response
           </p>
         </div>
 
-        {/* 7. Validation Pass Rate */}
+        {/* 6. Ground-Truth Accuracy */}
         <div className="aviation-glass-card rounded-2xl p-5 shadow-sm space-y-2 hover:-translate-y-1 transition-all">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Validation Pass Rate</span>
-            <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <CheckCircle2 className="w-4 h-4" />
-            </span>
-          </div>
-          <p className="text-3xl font-extrabold text-emerald-400 font-mono">{overview?.validation_pass_rate ?? 0}%</p>
-          <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80 font-mono">
-            {overview?.validation_pass_count || 0} passed factuality audits
-          </p>
-        </div>
-
-        {/* 8. Ground-Truth Accuracy */}
-        <div className="aviation-glass-card rounded-2xl p-5 shadow-sm space-y-2 hover:-translate-y-1 transition-all">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Ground-Truth Accuracy</span>
+            <span className="font-bold text-slate-400 uppercase tracking-wider font-mono text-[10px]">Accuracy</span>
             <span className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
               <Sparkles className="w-4 h-4" />
             </span>
@@ -446,10 +415,10 @@ export const AnalyticsPage: React.FC = () => {
             <p className="text-3xl font-extrabold text-emerald-400 font-mono">
               {overview?.ground_truth_accuracy ?? 91.4}%
             </p>
-            <span className="text-[11px] text-slate-400 font-mono">({overview?.total_feedback_count || 0} labels)</span>
+            <span className="text-[11px] text-slate-400 font-mono">({overview?.total_feedback_count || 0})</span>
           </div>
           <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80 font-mono">
-            Human supervisor error rate: <strong>{overview?.ai_error_rate}%</strong>
+            Ground-truth labels
           </p>
         </div>
       </div>
@@ -459,10 +428,10 @@ export const AnalyticsPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-base font-bold text-white flex items-center gap-2 font-display">
-              Confidence Score Calibration Histogram
+              Confidence Score Distribution
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Click any bucket to inspect ticket cases. 70.0% is the policy threshold for autonomous resolution.
+              Score calibration by range (Policy threshold: 70%)
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs font-mono">

@@ -12,6 +12,7 @@ from app.models.classification import TicketClassification
 from app.models.setting import AppSetting
 from app.models.ticket_note import TicketNote
 from app.models.audit import AuditEvent
+from app.models.jira import JiraIssueRecord
 from app.schemas.ticket import (
     TicketCreate,
     TicketUpdate,
@@ -334,6 +335,57 @@ def list_tickets(
         query = query.order_by(desc(Ticket.created_at))
 
     items = query.offset((page - 1) * size).limit(size).all()
+    pages = (total + size - 1) // size if total > 0 else 1
+
+    return TicketListResponse(
+        items=items,
+        total=total,
+        page=page,
+        size=size,
+        pages=pages
+    )
+
+@router.get("/escalated", response_model=TicketListResponse)
+def list_escalated_tickets(
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100),
+    search: Optional[str] = None,
+    sort_by: str = Query("created_at"),
+    order: str = Query("desc"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Returns only tickets that have been successfully escalated to Jira.
+    """
+    query = (
+        db.query(Ticket)
+        .join(JiraIssueRecord, JiraIssueRecord.ticket_id == Ticket.id)
+        .distinct()
+    )
+
+    user_role_str = (
+        current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)
+    ).strip().upper()
+    is_staff = user_role_str in ["ADMIN", "SUPPORT_AGENT", "SUPPORT_ENGINEER"]
+    if not is_staff:
+        query = query.filter(Ticket.reporter_id == current_user.id)
+
+    if search:
+        search_fmt = f"%{search}%"
+        query = query.filter(
+            or_(
+                Ticket.title.ilike(search_fmt),
+                Ticket.description.ilike(search_fmt),
+                Ticket.passenger_name.ilike(search_fmt),
+                Ticket.ticket_number.ilike(search_fmt),
+                Ticket.booking_reference.ilike(search_fmt),
+                JiraIssueRecord.jira_key.ilike(search_fmt)
+            )
+        )
+
+    total = query.count()
+    items = query.order_by(desc(Ticket.created_at)).offset((page - 1) * size).limit(size).all()
     pages = (total + size - 1) // size if total > 0 else 1
 
     return TicketListResponse(

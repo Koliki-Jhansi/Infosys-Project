@@ -11,7 +11,7 @@ export const FlightBackground: React.FC<FlightBackgroundProps> = ({
 }) => {
   return (
     <div
-      className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none"
+      className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none bg-[#FFFFFF]"
       aria-hidden="true"
     >
       {/* Dynamic Ambient Gradient Meshes */}

@@ -8,6 +8,7 @@ from app.models.workflow import WorkflowExecution, AgentExecution
 from app.models.evaluation import AIEvaluation
 from app.services.agents.airline.diagnosis_agent import DiagnosisAgent
 from app.services.agents.airline.retrieval_agent import AirlineRetrievalAgent
+from app.services.agents.airline.priority_agent import PriorityCriticalityAgent
 from app.services.agents.airline.resolution_agent import ResolutionAgent
 from app.services.agents.airline.validation_agent import ValidationAgent
 from app.services.agents.airline.escalation_agent import EscalationAgent
@@ -89,20 +90,24 @@ class AirlineWorkflowOrchestrator:
             state["approval_notes"] = human_approval_notes
 
         try:
-            # 1. Diagnosis Agent
-            diag_agent = DiagnosisAgent()
+            # 1. Diagnosis Agent (Ticket Analysis Agent)
+            diag_agent = DiagnosisAgent(name="Diagnosis Agent")
             _, _, state = await self._run_agent(workflow, diag_agent, state)
 
-            # 2. Retrieval Agent
-            ret_agent = AirlineRetrievalAgent(self.db)
+            # 2. Retrieval Agent (RAG Knowledge Retrieval Agent)
+            ret_agent = AirlineRetrievalAgent(self.db, name="Retrieval Agent")
             _, _, state = await self._run_agent(workflow, ret_agent, state)
 
-            # 3. Resolution Agent
-            res_agent = ResolutionAgent()
+            # 3. Priority and Criticality Analysis
+            priority_agent = PriorityCriticalityAgent(self.db, name="Priority and Criticality Analysis")
+            _, _, state = await self._run_agent(workflow, priority_agent, state)
+
+            # 4. Resolution Agent (AI Solution Generation)
+            res_agent = ResolutionAgent(name="Resolution Agent")
             _, _, state = await self._run_agent(workflow, res_agent, state)
 
-            # 4. Validation Agent
-            val_agent = ValidationAgent()
+            # 5. Validation Agent (Confidence Evaluation)
+            val_agent = ValidationAgent(name="Validation Agent")
             _, val_out, state = await self._run_agent(workflow, val_agent, state)
 
             # If validation requires revision and not exceeded cycles

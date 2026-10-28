@@ -16,6 +16,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { ReviewQueuePage } from './pages/ReviewQueuePage';
 import { JiraPage } from './pages/JiraPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
+import { EscalatedTicketsPage } from './pages/EscalatedTicketsPage';
 import { RefreshCw } from 'lucide-react';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -23,7 +24,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] flex items-center justify-center">
         <RefreshCw className="w-8 h-8 text-sky-500 animate-spin" />
       </div>
     );
@@ -66,6 +67,8 @@ export const App: React.FC = () => {
             <Route path="knowledge" element={<KnowledgePage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="reviews" element={<ReviewQueuePage />} />
+            <Route path="escalated" element={<EscalatedTicketsPage />} />
+            <Route path="tickets/escalated" element={<EscalatedTicketsPage />} />
             <Route path="jira" element={<JiraPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
           </Route>
