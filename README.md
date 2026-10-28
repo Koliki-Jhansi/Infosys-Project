@@ -16,25 +16,26 @@ graph TD
     C -- "Confidence >= 70% (Standard Grounded Policy)" --> E[5-Agent Airline Orchestrator]
     D -- "Agent Sign-off & Policy Override" --> E
 
-    subgraph "5-Agent Airline Orchestration Pipeline"
-        E --> F[Agent 1: Diagnosis Agent]
-        F --> G[Agent 2: Retrieval Agent]
-        G --> H[Agent 3: Resolution Agent]
-        H --> I[Agent 4: Validation Agent]
-        I -- "Verification Failed / Payout Promise" --> J{Escalation Gate}
-        I -- "PASS Validation" --> K[Agent 5: Escalation Agent]
-        J -- "Mandatory Escalation" --> K
-        K -- "Confidence >= 70% & Validated" --> L[Automatic Resolution & Passenger Response]
-        K -- "Confidence < 70% OR Review Mandated" --> M[Escalated to Station Supervisor]
+    subgraph "6-Stage Multi-Agent Airline Orchestration Pipeline"
+        E --> F[Stage 1: Ticket Analysis Agent]
+        F --> G[Stage 2: RAG Knowledge Retrieval Agent]
+        G --> H[Stage 3: Priority & Criticality Analysis]
+        H --> I[Stage 4: AI Solution Generation]
+        I --> J[Stage 5: Confidence Evaluation Agent]
+        J -- "Revision Needed" --> I
+        J --> K[Stage 6: Final Decision Agent]
+        K -- "Confidence >= 70% & Validated" --> L[AI Resolution & Passenger Email Dispatch]
+        K -- "Confidence < 70% OR Flagged" --> M[Jira Cloud Issue Creation & Escalation]
     end
 
     subgraph "Airline Policy Knowledge Base"
         G <--> N[(Vector Index: Baggage, 24h Refund, Delays, Special Assistance, Boarding)]
     end
 
-    subgraph "AI Telemetry & Evaluation Database"
-        E --> O[(AIEvaluation & EvaluationFeedback Persistence)]
-        O --> P[AI Performance Analytics Dashboard]
+    subgraph "Integrations & Telemetry"
+        K --> O[(Atlassian Jira Cloud REST API)]
+        K --> P[(SMTP Email Dispatch Service)]
+        E --> Q[(AIEvaluation & WorkflowExecution Persistence)]
     end
 ```
 
